@@ -1,0 +1,13 @@
+{
+  "name": "kriss/webman-debugbar",
+  "type": "library",
+  "license": "MIT",
+  "description": "Webman plugin kriss/webman-debugbar",
+  "require": {
+  },
+  "autoload": {
+    "psr-4": {
+      "Kriss\\WebmanDebugbar\\": "src"
+    }
+  }
+}
