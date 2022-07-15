@@ -22,6 +22,7 @@ class WebmanDebugBar extends DebugBar
         'storage' => true,
         'open_handler_url' => '/_debugbar_open',
         'asset_base_url' => '/_debugbar',
+        'sample_url' => '/_debugbar/sample',
     ];
 
     public function __construct(array $config = [])
@@ -99,6 +100,12 @@ class WebmanDebugBar extends DebugBar
             return;
         }
 
+        // 示例的路由
+        if ($this->config['sample_url']) {
+            Route::get($this->config['sample_url'], function () {
+                return response("<html><body><h1>DebugBar Sample</h1></body></html>");
+            });
+        }
         // 历史记录的路由
         if ($this->config['open_handler_url']) {
             Route::get($this->config['open_handler_url'], function () {

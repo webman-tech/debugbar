@@ -69,7 +69,7 @@ class DebugBarMiddleware implements MiddlewareInterface
         if (is_array($header)) {
             $header = implode(', ', $header);
         }
-        $is = strpos($header, 'application/json') !== false;
+        $is = strpos($header, 'text/html') !== false;
         if ($is) {
             return true;
         }
@@ -87,7 +87,7 @@ class DebugBarMiddleware implements MiddlewareInterface
         if ($is) {
             return true;
         }
-        if (strpos($response->rawBody(), '<html') === 0 || strpos($response->rawBody(), '<body>') !== false) {
+        if (strpos($response->rawBody(), '<html') === 0 || strpos($response->rawBody(), '<body') !== false) {
             return true;
         }
         return false;
