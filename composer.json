@@ -12,5 +12,9 @@
     "psr-4": {
       "Kriss\\WebmanDebugBar\\": "src"
     }
+  },
+  "require-dev": {
+    "illuminate/database": "^8.83",
+    "illuminate/events": "^8.83"
   }
 }

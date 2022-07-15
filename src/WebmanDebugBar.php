@@ -8,10 +8,12 @@ use DebugBar\DataCollector\PhpInfoCollector;
 use DebugBar\DebugBar;
 use DebugBar\OpenHandler;
 use DebugBar\Storage\FileStorage;
+use Kriss\WebmanDebugBar\DataCollector\LaravelQueryCollector;
 use Kriss\WebmanDebugBar\DataCollector\MemoryCollector;
 use Kriss\WebmanDebugBar\DataCollector\RequestDataCollector;
 use Kriss\WebmanDebugBar\DataCollector\TimeDataCollector;
 use Kriss\WebmanDebugBar\DataCollector\WebmanCollector;
+use Kriss\WebmanDebugBar\Helper\ArrayHelper;
 use Kriss\WebmanDebugBar\Helper\StringHelper;
 use Kriss\WebmanDebugBar\Traits\DebugBarOverwrite;
 use Webman\Http\Request;
@@ -23,20 +25,28 @@ class WebmanDebugBar extends DebugBar
 
     protected array $config = [
         'enable' => false,
-        'collectors' => null,
-        'http_driver' => true,
-        'storage' => true,
-        'open_handler_url' => '/_debugbar/open',
-        'asset_base_url' => '/_debugbar/assets',
-        'sample_url' => '/_debugbar/sample',
-        'javascript_renderer_options' => [],
-        'skip_request_path' => ['/_debugbar/open', '/_debugbar/assets/*', '*.css', '*.js'],
-        'skip_request_callback' => null,
+        'collectors' => null, // 其他 collectors，使用 callable 返回 DataCollectorInterface 数组
+        'http_driver' => true, // 定义 http_driver
+        'storage' => true, // 定义 storage
+        'open_handler_url' => '/_debugbar/open', // storage 启用时打开历史的路由
+        'asset_base_url' => '/_debugbar/assets', // 静态资源的路由
+        'sample_url' => '/_debugbar/sample', // 示例页面，可用于查看 debugbar 信息，设为 null 关闭
+        'javascript_renderer_options' => [], // 其他 javascriptRenderer 参数
+        'skip_request_path' => [ // 需要忽略的请求路由
+            '/_debugbar/open',
+            '/_debugbar/assets/*',
+            '*.css',
+            '*.js',
+        ],
+        'skip_request_callback' => null, // 需要忽略的请求 callback 处理
+        'options' => [
+            'db' => []
+        ],
     ];
 
     public function __construct(array $config = [])
     {
-        $this->config = array_merge($this->config, $config);
+        $this->config = ArrayHelper::merge($this->config, $config);
 
         if ($this->isEnable()) {
             $this->boot();
@@ -87,8 +97,11 @@ class WebmanDebugBar extends DebugBar
             60 => new ExceptionsCollector(),
             70 => new RequestDataCollector(),
         ];
+        if (class_exists('Illuminate\Database\Capsule\Manager')) {
+            $collectors[80] = new LaravelQueryCollector($this->config['options']['db'], $collectors[40]);
+        }
         if ($this->config['collectors']) {
-            $this->config['collectors'] = call_user_func($this->config['collectors']);
+            $this->config['collectors'] = call_user_func($this->config['collectors'], $collectors);
             $collectors = $this->config['collectors'] + $collectors;
         }
         ksort($collectors);
@@ -101,9 +114,17 @@ class WebmanDebugBar extends DebugBar
         if ($this->getStorage() && $this->config['open_handler_url']) {
             $renderer->setOpenHandlerUrl($this->config['open_handler_url']);
         }
+        // laravel query 的配置
+        if ($this->hasCollector('query') && $this->getCollector('query') instanceof LaravelQueryCollector) {
+            $renderer->addAssets([], [
+                __DIR__ . '/Laravel/Resources/sqlqueries2/widget.js',
+            ]);
+        }
+        // ajax 绑定
         $renderer->setBindAjaxHandlerToXHR();
         $renderer->setBindAjaxHandlerToFetch();
         $renderer->setBindAjaxHandlerToJquery();
+        // 其他配置参数
         $renderer->setOptions($this->config['javascript_renderer_options']);
 
         $this->booted = true;
@@ -137,6 +158,11 @@ class WebmanDebugBar extends DebugBar
             // 安全检查，避免url里 /../../../password 这样的非法访问
             if (strpos($path, '..') !== false) {
                 return response('<h1>400 Bad Request</h1>', 400);
+            }
+            // 特殊的文件
+            if ($path === 'widgets/sqlqueries/widget.js' && $this->hasCollector('queries') && $this->getCollector('queries') instanceof LaravelQueryCollector) {
+                $file = __DIR__ . '/Laravel/Resources/sqlqueries/widget.js';
+                return response()->withFile($file);
             }
             // 文件
             $file = "$staticBasePath/$path";
