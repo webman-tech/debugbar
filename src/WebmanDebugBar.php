@@ -6,15 +6,18 @@ use DebugBar\DataCollector\ExceptionsCollector;
 use DebugBar\DataCollector\MemoryCollector;
 use DebugBar\DataCollector\MessagesCollector;
 use DebugBar\DataCollector\PhpInfoCollector;
-use DebugBar\DataCollector\RequestDataCollector;
 use DebugBar\DataCollector\TimeDataCollector;
 use DebugBar\DebugBar;
 use DebugBar\OpenHandler;
 use DebugBar\Storage\FileStorage;
+use Kriss\WebmanDebugBar\DataCollector\RequestDataCollector;
+use Kriss\WebmanDebugBar\Traits\DebugBarOverwrite;
 use Webman\Route;
 
 class WebmanDebugBar extends DebugBar
 {
+    use DebugBarOverwrite;
+
     protected array $config = [
         'enable' => false,
         'collectors' => null,
@@ -23,6 +26,7 @@ class WebmanDebugBar extends DebugBar
         'open_handler_url' => '/_debugbar_open',
         'asset_base_url' => '/_debugbar',
         'sample_url' => '/_debugbar/sample',
+        'javascript_renderer_options' => [],
     ];
 
     public function __construct(array $config = [])
@@ -87,9 +91,7 @@ class WebmanDebugBar extends DebugBar
         if ($this->getStorage() && $this->config['open_handler_url']) {
             $renderer->setOpenHandlerUrl($this->config['open_handler_url']);
         }
-        $renderer->setIncludeVendors();
-        $renderer->setBindAjaxHandlerToFetch();
-        $renderer->setBindAjaxHandlerToXHR();
+        $renderer->setOptions($this->config['javascript_renderer_options']);
 
         $this->booted = true;
     }
@@ -103,7 +105,7 @@ class WebmanDebugBar extends DebugBar
         // 示例的路由
         if ($this->config['sample_url']) {
             Route::get($this->config['sample_url'], function () {
-                return response("<html><body><h1>DebugBar Sample</h1></body></html>");
+                return response("<html lang='en'><body><h1>DebugBar Sample</h1></body></html>");
             });
         }
         // 历史记录的路由
