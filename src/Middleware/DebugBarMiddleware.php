@@ -23,7 +23,7 @@ class DebugBarMiddleware implements MiddlewareInterface
     public function process(Request $request, callable $handler): Response
     {
         $this->debugBar = DebugBar::instance();
-        if (!$this->debugBar->isEnable()) {
+        if (!$this->debugBar->isEnable() || $this->debugBar->isSkipRequest($request)) {
             return $handler($request);
         }
 
@@ -31,26 +31,14 @@ class DebugBarMiddleware implements MiddlewareInterface
 
         $this->debugBarRenderer = $this->debugBar->getJavascriptRenderer();
 
-        if ($this->shouldReturnResponse($request, $response)) {
-            return $response;
-        }
-
-        return $this->attachDebugBarToHtmlResponse($response);
-    }
-
-    protected function shouldReturnResponse(Request $request, Response $response): bool
-    {
         if ($this->isRedirect($response)) {
-            return true;
+            $this->debugBar->stackData();
         }
-        if (!$this->isHtmlAccepted($request)) {
-            return true;
-        }
-        if (!$this->isHtmlResponse($response)) {
-            return true;
+        if ($this->isHtmlAccepted($request) || $this->isHtmlResponse($response)) {
+            return $this->attachDebugBarToHtmlResponse($response);
         }
 
-        return false;
+        return $this->attachDebugBarWithNotHtmlResponse($response);
     }
 
     protected function attachDebugBarToHtmlResponse(Response $response): Response
@@ -59,6 +47,13 @@ class DebugBarMiddleware implements MiddlewareInterface
         $body = $this->debugBarRenderer->render();
         $responseBody = $response->rawBody();
         $response->withBody($responseBody . $head . $body);
+
+        return $response;
+    }
+
+    protected function attachDebugBarWithNotHtmlResponse(Response $response): Response
+    {
+        $this->debugBarRenderer->render(false);
 
         return $response;
     }

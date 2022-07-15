@@ -11,7 +11,9 @@ use DebugBar\Storage\FileStorage;
 use Kriss\WebmanDebugBar\DataCollector\MemoryCollector;
 use Kriss\WebmanDebugBar\DataCollector\RequestDataCollector;
 use Kriss\WebmanDebugBar\DataCollector\TimeDataCollector;
+use Kriss\WebmanDebugBar\Helper\StringHelper;
 use Kriss\WebmanDebugBar\Traits\DebugBarOverwrite;
+use Webman\Http\Request;
 use Webman\Route;
 
 class WebmanDebugBar extends DebugBar
@@ -23,10 +25,12 @@ class WebmanDebugBar extends DebugBar
         'collectors' => null,
         'http_driver' => true,
         'storage' => true,
-        'open_handler_url' => '/_debugbar_open',
-        'asset_base_url' => '/_debugbar',
+        'open_handler_url' => '/_debugbar/open',
+        'asset_base_url' => '/_debugbar/assets',
         'sample_url' => '/_debugbar/sample',
         'javascript_renderer_options' => [],
+        'skip_request_path' => ['/_debugbar/open', '/_debugbar/assets/*', '*.css', '*.js'],
+        'skip_request_callback' => null,
     ];
 
     public function __construct(array $config = [])
@@ -91,6 +95,9 @@ class WebmanDebugBar extends DebugBar
         if ($this->getStorage() && $this->config['open_handler_url']) {
             $renderer->setOpenHandlerUrl($this->config['open_handler_url']);
         }
+        $renderer->setBindAjaxHandlerToXHR();
+        $renderer->setBindAjaxHandlerToFetch();
+        $renderer->setBindAjaxHandlerToJquery();
         $renderer->setOptions($this->config['javascript_renderer_options']);
 
         $this->booted = true;
@@ -132,5 +139,23 @@ class WebmanDebugBar extends DebugBar
             }
             return response()->withFile($file);
         });
+    }
+
+    public function isSkipRequest(Request $request): bool
+    {
+        if ($this->config['skip_request_path']) {
+            $path = $request->path();
+            foreach ($this->config['skip_request_path'] as $pathPattern) {
+                if (StringHelper::matchWildcard($pathPattern, $path)) {
+                    return true;
+                }
+            }
+        }
+        if ($this->config['skip_request_callback']) {
+            if (call_user_func($this->config['skip_request_callback'], $request)) {
+                return true;
+            }
+        }
+        return false;
     }
 }
