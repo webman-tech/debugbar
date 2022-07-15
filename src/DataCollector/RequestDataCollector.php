@@ -2,9 +2,9 @@
 
 namespace Kriss\WebmanDebugBar\DataCollector;
 
-use DebugBar\DataCollector\RequestDataCollector as PhpRequestDataCollector;
+use DebugBar\DataCollector\RequestDataCollector as OriginRequestDataCollector;
 
-class RequestDataCollector extends PhpRequestDataCollector
+class RequestDataCollector extends OriginRequestDataCollector
 {
     /**
      * @inheritdoc

@@ -4,7 +4,7 @@ namespace Kriss\WebmanDebugBar;
 
 class DebugBar
 {
-    const REQUEST_KEY = '_debugbar_request_instance';
+    public const REQUEST_KEY = '_debugbar_request_instance';
 
     protected static ?WebmanDebugBar $_instance = null;
     protected static ?WebmanDebugBar $_instanceRequest = null;

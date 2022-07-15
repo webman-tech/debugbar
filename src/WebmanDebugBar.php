@@ -3,14 +3,14 @@
 namespace Kriss\WebmanDebugBar;
 
 use DebugBar\DataCollector\ExceptionsCollector;
-use DebugBar\DataCollector\MemoryCollector;
 use DebugBar\DataCollector\MessagesCollector;
 use DebugBar\DataCollector\PhpInfoCollector;
-use DebugBar\DataCollector\TimeDataCollector;
 use DebugBar\DebugBar;
 use DebugBar\OpenHandler;
 use DebugBar\Storage\FileStorage;
+use Kriss\WebmanDebugBar\DataCollector\MemoryCollector;
 use Kriss\WebmanDebugBar\DataCollector\RequestDataCollector;
+use Kriss\WebmanDebugBar\DataCollector\TimeDataCollector;
 use Kriss\WebmanDebugBar\Traits\DebugBarOverwrite;
 use Webman\Route;
 
