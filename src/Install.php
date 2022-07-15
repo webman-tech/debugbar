@@ -1,5 +1,5 @@
 <?php
-namespace Kriss\WebmanDebugbar;
+namespace Kriss\WebmanDebugBar;
 
 class Install
 {
