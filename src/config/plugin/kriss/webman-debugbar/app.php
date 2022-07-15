@@ -1,6 +1,6 @@
 <?php
 
-$enable = true;
+$enable = config('app.debug', false);
 
 return [
     'enable' => $enable,

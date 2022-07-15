@@ -11,6 +11,7 @@ use DebugBar\Storage\FileStorage;
 use Kriss\WebmanDebugBar\DataCollector\MemoryCollector;
 use Kriss\WebmanDebugBar\DataCollector\RequestDataCollector;
 use Kriss\WebmanDebugBar\DataCollector\TimeDataCollector;
+use Kriss\WebmanDebugBar\DataCollector\WebmanCollector;
 use Kriss\WebmanDebugBar\Helper\StringHelper;
 use Kriss\WebmanDebugBar\Traits\DebugBarOverwrite;
 use Webman\Http\Request;
@@ -77,17 +78,22 @@ class WebmanDebugBar extends DebugBar
             $this->setStorage($storage);
         }
         // Collector
-        $this->addCollector(new PhpInfoCollector());
-        $this->addCollector(new MessagesCollector());
-        $this->addCollector(new TimeDataCollector());
-        $this->addCollector(new MemoryCollector());
-        $this->addCollector(new ExceptionsCollector());
-        $this->addCollector(new RequestDataCollector());
+        $collectors = [
+            10 => new PhpInfoCollector(),
+            20 => new WebmanCollector(),
+            30 => new MessagesCollector(),
+            40 => new TimeDataCollector(),
+            50 => new MemoryCollector(),
+            60 => new ExceptionsCollector(),
+            70 => new RequestDataCollector(),
+        ];
         if ($this->config['collectors']) {
             $this->config['collectors'] = call_user_func($this->config['collectors']);
-            foreach ($this->config['collectors'] as $collector) {
-                $this->addCollector($collector);
-            }
+            $collectors = $this->config['collectors'] + $collectors;
+        }
+        ksort($collectors);
+        foreach ($collectors as $collector) {
+            $this->addCollector($collector);
         }
         // renderer
         $renderer = $this->getJavascriptRenderer($this->config['asset_base_url']);
