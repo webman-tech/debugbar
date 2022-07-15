@@ -8,7 +8,7 @@ return [
      * @see \Kriss\WebmanDebugBar\WebmanDebugBar::$config
      */
     'debugbar' => [
-        'enable' => false,
+        'enable' => $enable,
         'collectors' => null,
         'http_driver' => true,
         'storage' => true,
