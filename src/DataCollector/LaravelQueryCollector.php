@@ -17,7 +17,7 @@ class LaravelQueryCollector extends QueryCollector
         'backtrace' => true, // 显示 sql 来源
         'backtrace_exclude_paths' => [], // 排除 sql 来源
         'timeline' => true, // 将 sql 显示到 timeline 上
-        'duration_background' => false, // 相对于执行所需的时间，在每个查询上显示阴影背景
+        'duration_background' => true, // 相对于执行所需的时间，在每个查询上显示阴影背景
         'explain' => [
             'enabled' => false,
             'types' => ['SELECT'], // 废弃的设置，目前只支持 SELECT
@@ -47,6 +47,16 @@ class LaravelQueryCollector extends QueryCollector
 
         $this->setConfig();
         $this->addListener(Db::connection());
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getAssets()
+    {
+        $assets = parent::getAssets();
+        $assets['js'] = 'laravel/sqlqueries/widget.js';
+        return $assets;
     }
 
     protected function setConfig()

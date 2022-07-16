@@ -192,6 +192,17 @@ class WebmanDebugBar extends DebugBar
     }
 
     /**
+     * @inheritDoc
+     */
+    public function getJavascriptRenderer($baseUrl = null, $basePath = null)
+    {
+        if ($this->jsRenderer === null) {
+            $this->jsRenderer = new WebmanJavascriptRenderer($this, $baseUrl, $basePath);
+        }
+        return $this->jsRenderer;
+    }
+
+    /**
      * boot javascriptRenderer
      */
     protected function bootJavascriptRenderer(): void
@@ -201,16 +212,6 @@ class WebmanDebugBar extends DebugBar
         if ($this->getStorage() && $this->config['open_handler_url']) {
             $renderer->setOpenHandlerUrl($this->config['open_handler_url']);
         }
-        // laravel query 的配置
-        if ($this->hasCollector('query') && $this->getCollector('query') instanceof LaravelQueryCollector) {
-            $renderer->addAssets([], [
-                __DIR__ . '/Laravel/Resources/sqlqueries2/widget.js',
-            ]);
-        }
-        // ajax 绑定
-        $renderer->setBindAjaxHandlerToXHR();
-        $renderer->setBindAjaxHandlerToFetch();
-        $renderer->setBindAjaxHandlerToJquery();
         // 其他配置参数
         $renderer->setOptions($this->config['javascript_renderer_options']);
     }
@@ -240,25 +241,9 @@ class WebmanDebugBar extends DebugBar
         }
         // 静态资源路由
         $renderer = $this->getJavascriptRenderer();
-        Route::get($renderer->getBaseUrl() . '/[{path:.+}]', function ($request, $path = '') use ($renderer) {
-            // 静态文件目录
-            $staticBasePath = $renderer->getBasePath();
-            // 安全检查，避免url里 /../../../password 这样的非法访问
-            if (strpos($path, '..') !== false) {
-                return response('<h1>400 Bad Request</h1>', 400);
-            }
-            // 特殊的文件
-            if ($path === 'widgets/sqlqueries/widget.js' && $this->hasCollector('queries') && $this->getCollector('queries') instanceof LaravelQueryCollector) {
-                $file = __DIR__ . '/Laravel/Resources/sqlqueries/widget.js';
-                return response()->withFile($file);
-            }
-            // 文件
-            $file = "$staticBasePath/$path";
-            if (!is_file($file)) {
-                return response('<h1>404 Not Found</h1>', 404);
-            }
-            return response()->withFile($file);
-        });
+        if ($renderer instanceof WebmanJavascriptRenderer) {
+            $renderer->registerAssetRoute();
+        }
     }
 
     /**
