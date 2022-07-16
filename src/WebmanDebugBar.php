@@ -2,6 +2,7 @@
 
 namespace Kriss\WebmanDebugBar;
 
+use DebugBar\DataCollector\DataCollectorInterface;
 use DebugBar\DataCollector\ExceptionsCollector;
 use DebugBar\DataCollector\MessagesCollector;
 use DebugBar\DataCollector\PhpInfoCollector;
@@ -11,6 +12,7 @@ use DebugBar\Storage\FileStorage;
 use Kriss\WebmanDebugBar\DataCollector\LaravelQueryCollector;
 use Kriss\WebmanDebugBar\DataCollector\MemoryCollector;
 use Kriss\WebmanDebugBar\DataCollector\RequestDataCollector;
+use Kriss\WebmanDebugBar\DataCollector\SessionCollector;
 use Kriss\WebmanDebugBar\DataCollector\TimeDataCollector;
 use Kriss\WebmanDebugBar\DataCollector\WebmanCollector;
 use Kriss\WebmanDebugBar\Helper\ArrayHelper;
@@ -25,34 +27,62 @@ class WebmanDebugBar extends DebugBar
 
     protected array $config = [
         'enable' => false,
-        'collectors' => null, // 其他 collectors，使用 callable 返回 DataCollectorInterface 数组
         'http_driver' => true, // 定义 http_driver
         'storage' => true, // 定义 storage
         'open_handler_url' => '/_debugbar/open', // storage 启用时打开历史的路由
         'asset_base_url' => '/_debugbar/assets', // 静态资源的路由
         'sample_url' => '/_debugbar/sample', // 示例页面，可用于查看 debugbar 信息，设为 null 关闭
         'javascript_renderer_options' => [], // 其他 javascriptRenderer 参数
-        'skip_request_path' => [ // 需要忽略的请求路由
+        /**
+         * 需要忽略的请求路由
+         */
+        'skip_request_path' => [
             '/_debugbar/open',
             '/_debugbar/assets/*',
             '*.css',
             '*.js',
         ],
-        'skip_request_callback' => null, // 需要忽略的请求 callback 处理
+        /**
+         * 需要忽略的请求 callback 处理, function(Request $request): bool {}
+         */
+        'skip_request_callback' => null,
+        /**
+         * 支持的 collectors，可以配置成 class 或者 callback
+         */
+        'collectors' => [
+            'webman',
+            'phpinfo',
+            'messages',
+            'exceptions',
+            'time',
+            'request',
+            'memory',
+            'session',
+            'db',
+        ],
         'options' => [
-            'db' => []
+            /**
+             * @see LaravelQueryCollector::$config
+             */
+            'db' => [],
         ],
     ];
 
     public function __construct(array $config = [])
     {
+        $collectors = $config['collectors'] ?? $this->config['collectors'];
         $this->config = ArrayHelper::merge($this->config, $config);
+        $this->config['collectors'] = $collectors;
 
         if ($this->isEnable()) {
             $this->boot();
         }
     }
 
+    /**
+     * 是否被启用
+     * @return bool
+     */
     public function isEnable(): bool
     {
         return $this->config['enable'];
@@ -60,6 +90,9 @@ class WebmanDebugBar extends DebugBar
 
     protected bool $booted = false;
 
+    /**
+     * 加载
+     */
     protected function boot(): void
     {
         if ($this->booted) {
@@ -88,27 +121,81 @@ class WebmanDebugBar extends DebugBar
             $this->setStorage($storage);
         }
         // Collector
-        $collectors = [
-            10 => new PhpInfoCollector(),
-            20 => new WebmanCollector(),
-            30 => new MessagesCollector(),
-            40 => new TimeDataCollector(),
-            50 => new MemoryCollector(),
-            60 => new ExceptionsCollector(),
-            70 => new RequestDataCollector(),
-        ];
-        if (class_exists('Illuminate\Database\Capsule\Manager')) {
-            $collectors[80] = new LaravelQueryCollector($this->config['options']['db'], $collectors[40]);
-        }
-        if ($this->config['collectors']) {
-            $this->config['collectors'] = call_user_func($this->config['collectors'], $collectors);
-            $collectors = $this->config['collectors'] + $collectors;
-        }
-        ksort($collectors);
-        foreach ($collectors as $collector) {
+        $this->bootCollectors();
+        // renderer
+        $this->bootJavascriptRenderer();
+
+        $this->booted = true;
+    }
+
+    /**
+     * boot collector
+     */
+    protected function bootCollectors(): void
+    {
+        $collectorMaps = $this->collectorMaps();
+        foreach ($this->config['collectors'] as $collector) {
+            if (is_string($collector)) {
+                if (isset($collectorMaps[$collector])) {
+                    $collector = $collectorMaps[$collector];
+                }
+            }
+            if (is_string($collector) && strpos($collector, '\\') !== false && class_exists($collector)) {
+                $collector = new $collector;
+            }
+            if (is_callable($collector)) {
+                $collector = call_user_func($collector);
+            }
+
+            if (!$collector instanceof DataCollectorInterface) {
+                continue;
+            }
+            if ($this->hasCollector($collector->getName())) {
+                continue;
+            }
             $this->addCollector($collector);
         }
-        // renderer
+    }
+
+    /**
+     * 默认的 collector 配置
+     * @return array
+     */
+    protected function collectorMaps(): array
+    {
+        return [
+            'webman' => WebmanCollector::class,
+            'phpinfo' => PhpInfoCollector::class,
+            'messages' => MessagesCollector::class,
+            'time' => TimeDataCollector::class,
+            'memory' => MemoryCollector::class,
+            'exceptions' => ExceptionsCollector::class,
+            'request' => RequestDataCollector::class,
+            'db' => function () {
+                if (class_exists('Illuminate\Database\Capsule\Manager')) {
+                    $timeDataCollector = null;
+                    if ($this->hasCollector('time')) {
+                        /** @var \DebugBar\DataCollector\TimeDataCollector $timeDataCollector */
+                        $timeDataCollector = $this->getCollector('time');
+                    }
+                    return new LaravelQueryCollector($this->config['options']['db'], $timeDataCollector);
+                }
+                return null;
+            },
+            'session' => function () {
+                if (request() && request()->session()) {
+                    return new SessionCollector(request()->session());
+                }
+                return null;
+            },
+        ];
+    }
+
+    /**
+     * boot javascriptRenderer
+     */
+    protected function bootJavascriptRenderer(): void
+    {
         $renderer = $this->getJavascriptRenderer($this->config['asset_base_url']);
         // 历史访问
         if ($this->getStorage() && $this->config['open_handler_url']) {
@@ -126,10 +213,11 @@ class WebmanDebugBar extends DebugBar
         $renderer->setBindAjaxHandlerToJquery();
         // 其他配置参数
         $renderer->setOptions($this->config['javascript_renderer_options']);
-
-        $this->booted = true;
     }
 
+    /**
+     * 注册必要路由
+     */
     public function registerRoute(): void
     {
         if (!$this->isEnable()) {
@@ -173,6 +261,11 @@ class WebmanDebugBar extends DebugBar
         });
     }
 
+    /**
+     * 是否是需要忽略的请求
+     * @param Request $request
+     * @return bool
+     */
     public function isSkipRequest(Request $request): bool
     {
         if ($this->config['skip_request_path']) {
