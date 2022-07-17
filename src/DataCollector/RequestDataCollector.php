@@ -13,6 +13,9 @@ class RequestDataCollector extends OriginRequestDataCollector
     {
         $request = request();
         $data = [
+            'app' => $request->app,
+            'controller' => $request->controller,
+            'action' => $request->action,
             'method' => $request->method(),
             'host' => $request->host(),
             'uri' => $request->uri(),
