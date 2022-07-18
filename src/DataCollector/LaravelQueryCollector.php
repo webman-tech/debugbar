@@ -5,10 +5,10 @@ namespace Kriss\WebmanDebugBar\DataCollector;
 use DebugBar\DataCollector\TimeDataCollector as DebugBarTimeDataCollector;
 use Illuminate\Database\Connection;
 use Illuminate\Database\Events\QueryExecuted;
+use Kriss\WebmanDebugBar\DebugBar;
 use Kriss\WebmanDebugBar\Helper\ArrayHelper;
 use Kriss\WebmanDebugBar\Laravel\DataCollector\QueryCollector;
 use Kriss\WebmanDebugBar\Laravel\DataFormatter\QueryFormatter;
-use support\Db;
 
 class LaravelQueryCollector extends QueryCollector
 {
@@ -27,7 +27,7 @@ class LaravelQueryCollector extends QueryCollector
         'slow_threshold' => false, // 仅显示慢sql，设置毫秒时间来启用
     ];
 
-    public function __construct(array $config, DebugBarTimeDataCollector $timeCollector = null)
+    public function __construct(array $config = [], DebugBarTimeDataCollector $timeCollector = null)
     {
         $this->config = ArrayHelper::merge($this->config, $config);
 
@@ -38,7 +38,7 @@ class LaravelQueryCollector extends QueryCollector
         parent::__construct($timeCollector);
 
         $this->mergeBacktraceExcludePaths([
-            '/kriss/webman-debugbar',
+            '/webman-debugbar/',
             '/vendor/kriss/webman-debugbar',
             '/vendor/illuminate/support',
             '/vendor/illuminate/database',
@@ -46,7 +46,6 @@ class LaravelQueryCollector extends QueryCollector
         ]);
 
         $this->setConfig();
-        $this->addListener(Db::connection());
     }
 
     /**
@@ -93,7 +92,7 @@ class LaravelQueryCollector extends QueryCollector
         }
     }
 
-    protected function addListener(Connection $db)
+    public function addListener(Connection $db)
     {
         $db->listen(function (QueryExecuted $event) {
             $bindings = $event->bindings;
@@ -103,50 +102,61 @@ class LaravelQueryCollector extends QueryCollector
 
             $threshold = $this->config['slow_threshold'];
             if (!$threshold || $time > $threshold) {
-                $this->addQuery($query, $bindings, $time, $connection);
+                $this->getRequestThisCollector()->addQuery($query, $bindings, $time, $connection);
             }
         });
 
         $db->getEventDispatcher()->listen(
             \Illuminate\Database\Events\TransactionBeginning::class,
             function ($transaction) {
-                $this->collectTransactionEvent('Begin Transaction', $transaction->connection);
+                $this->getRequestThisCollector()->collectTransactionEvent('Begin Transaction', $transaction->connection);
             }
         );
 
         $db->getEventDispatcher()->listen(
             \Illuminate\Database\Events\TransactionCommitted::class,
             function ($transaction) {
-                $this->collectTransactionEvent('Commit Transaction', $transaction->connection);
+                $this->getRequestThisCollector()->collectTransactionEvent('Commit Transaction', $transaction->connection);
             }
         );
 
         $db->getEventDispatcher()->listen(
             \Illuminate\Database\Events\TransactionRolledBack::class,
             function ($transaction) {
-                $this->collectTransactionEvent('Rollback Transaction', $transaction->connection);
+                $this->getRequestThisCollector()->collectTransactionEvent('Rollback Transaction', $transaction->connection);
             }
         );
 
         $db->getEventDispatcher()->listen(
             'connection.*.beganTransaction',
             function ($event, $params) {
-                $this->collectTransactionEvent('Begin Transaction', $params[0]);
+                $this->getRequestThisCollector()->collectTransactionEvent('Begin Transaction', $params[0]);
             }
         );
 
         $db->getEventDispatcher()->listen(
             'connection.*.committed',
             function ($event, $params) {
-                $this->collectTransactionEvent('Commit Transaction', $params[0]);
+                $this->getRequestThisCollector()->collectTransactionEvent('Commit Transaction', $params[0]);
             }
         );
 
         $db->getEventDispatcher()->listen(
             'connection.*.rollingBack',
             function ($event, $params) {
-                $this->collectTransactionEvent('Rollback Transaction', $params[0]);
+                $this->getRequestThisCollector()->collectTransactionEvent('Rollback Transaction', $params[0]);
             }
         );
+    }
+
+    /**
+     * 获取 request 下每次新的当前 collector 对象
+     * @return $this
+     */
+    protected function getRequestThisCollector(): self
+    {
+        /** @var static $collector */
+        $collector = DebugBar::instance()->getCollector($this->getName());
+        return $collector;
     }
 }
