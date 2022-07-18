@@ -17,6 +17,7 @@ use Kriss\WebmanDebugBar\DataCollector\TimeDataCollector;
 use Kriss\WebmanDebugBar\DataCollector\WebmanCollector;
 use Kriss\WebmanDebugBar\Helper\ArrayHelper;
 use Kriss\WebmanDebugBar\Helper\StringHelper;
+use Kriss\WebmanDebugBar\Storage\AutoCleanFileStorage;
 use Kriss\WebmanDebugBar\Traits\DebugBarOverwrite;
 use Webman\Http\Request;
 use Webman\Route;
@@ -114,6 +115,10 @@ class WebmanDebugBar extends DebugBar
             if ($this->config['storage'] === true) {
                 $this->config['storage'] = function () {
                     $path = runtime_path() . '/debugbar';
+                    if (class_exists('Symfony\Component\Finder\Finder')) {
+                        return new AutoCleanFileStorage($path);
+                    }
+                    // 使用该存储形式会导致文件数量极多
                     return new FileStorage($path);
                 };
             }
