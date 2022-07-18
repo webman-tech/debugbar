@@ -9,6 +9,7 @@ use DebugBar\DebugBar;
 use DebugBar\OpenHandler;
 use DebugBar\Storage\FileStorage;
 use Kriss\WebmanDebugBar\DataCollector\LaravelQueryCollector;
+use Kriss\WebmanDebugBar\DataCollector\LaravelRedisCollector;
 use Kriss\WebmanDebugBar\DataCollector\MemoryCollector;
 use Kriss\WebmanDebugBar\DataCollector\PhpInfoCollector;
 use Kriss\WebmanDebugBar\DataCollector\RequestDataCollector;
@@ -59,13 +60,18 @@ class WebmanDebugBar extends DebugBar
             'request',
             'memory',
             'session',
-            'db',
+            'laravelDB',
+            'laravelRedis',
         ],
         'options' => [
             /**
              * @see LaravelQueryCollector::$config
              */
             'db' => [],
+            /**
+             * @see LaravelRedisCollector::$config
+             */
+            'redis' => [],
         ],
     ];
 
@@ -176,20 +182,31 @@ class WebmanDebugBar extends DebugBar
             'memory' => MemoryCollector::class,
             'exceptions' => ExceptionsCollector::class,
             'request' => RequestDataCollector::class,
-            'db' => function () {
+            'session' => function () {
+                if (request() && request()->session()) {
+                    return new SessionCollector(request()->session());
+                }
+                return null;
+            },
+            'laravelDB' => function () {
                 if (class_exists('Illuminate\Database\Capsule\Manager')) {
                     $timeDataCollector = null;
                     if ($this->hasCollector('time')) {
                         /** @var \DebugBar\DataCollector\TimeDataCollector $timeDataCollector */
                         $timeDataCollector = $this->getCollector('time');
                     }
-                    return new LaravelQueryCollector($this->config['options']['db'], $timeDataCollector);
+                    return new LaravelQueryCollector($this->config['options']['db'] ?? [], $timeDataCollector);
                 }
                 return null;
             },
-            'session' => function () {
-                if (request() && request()->session()) {
-                    return new SessionCollector(request()->session());
+            'laravelRedis' => function () {
+                if (class_exists('Illuminate\Redis\RedisManager')) {
+                    $timeDataCollector = null;
+                    if ($this->hasCollector('time')) {
+                        /** @var \DebugBar\DataCollector\TimeDataCollector $timeDataCollector */
+                        $timeDataCollector = $this->getCollector('time');
+                    }
+                    return new LaravelRedisCollector($this->config['options']['redis'] ?? [], $timeDataCollector);
                 }
                 return null;
             },

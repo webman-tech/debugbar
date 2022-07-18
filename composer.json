@@ -16,6 +16,7 @@
   "require-dev": {
     "illuminate/database": "^8.83",
     "illuminate/events": "^8.83",
+    "illuminate/redis": "^8.83",
     "symfony/finder": "^5.4"
   }
 }

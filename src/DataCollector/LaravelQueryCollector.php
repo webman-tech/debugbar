@@ -37,14 +37,6 @@ class LaravelQueryCollector extends QueryCollector
 
         parent::__construct($timeCollector);
 
-        $this->mergeBacktraceExcludePaths([
-            '/webman-debugbar/',
-            '/vendor/kriss/webman-debugbar',
-            '/vendor/illuminate/support',
-            '/vendor/illuminate/database',
-            '/vendor/illuminate/events',
-        ]);
-
         $this->setConfig();
     }
 
@@ -58,8 +50,44 @@ class LaravelQueryCollector extends QueryCollector
         return $assets;
     }
 
+    /**
+     * @inheritDoc
+     */
+    public function getName()
+    {
+        return 'laravelDB';
+    }
+
+    /**
+     * @inheritDoc
+     */
+    function getWidgets()
+    {
+        $name = $this->getName();
+        return [
+            $name => [
+                "icon" => "database",
+                "widget" => "PhpDebugBar.Widgets.LaravelSQLQueriesWidget",
+                "map" => $name,
+                "default" => "[]"
+            ],
+            "{$name}:badge" => [
+                "map" => "{$name}.nb_statements",
+                "default" => 0,
+            ],
+        ];
+    }
+
     protected function setConfig()
     {
+        $this->mergeBacktraceExcludePaths([
+            '/webman-debugbar/',
+            '/vendor/kriss/webman-debugbar',
+            '/vendor/illuminate/support',
+            '/vendor/illuminate/database',
+            '/vendor/illuminate/events',
+        ]);
+
         $this->setDataFormatter(new QueryFormatter());
 
         if ($this->config['with_params']) {
