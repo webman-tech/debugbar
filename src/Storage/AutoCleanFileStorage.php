@@ -36,6 +36,10 @@ class AutoCleanFileStorage extends FileStorage
 
     private function autoClean()
     {
+        if (!is_dir($this->dirname)) {
+            return;
+        }
+
         $gcPercent = random_int(0, 100);
         if ($gcPercent < $this->config['gc_percent_by_files_count']) {
             $this->cleanByDirMaxSize($this->config['files_count_max'], $this->config['files_count_keep']);
