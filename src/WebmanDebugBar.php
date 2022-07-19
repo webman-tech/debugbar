@@ -13,6 +13,7 @@ use Kriss\WebmanDebugBar\DataCollector\LaravelRedisCollector;
 use Kriss\WebmanDebugBar\DataCollector\MemoryCollector;
 use Kriss\WebmanDebugBar\DataCollector\PhpInfoCollector;
 use Kriss\WebmanDebugBar\DataCollector\RequestDataCollector;
+use Kriss\WebmanDebugBar\DataCollector\RouteCollector;
 use Kriss\WebmanDebugBar\DataCollector\SessionCollector;
 use Kriss\WebmanDebugBar\DataCollector\TimeDataCollector;
 use Kriss\WebmanDebugBar\DataCollector\WebmanCollector;
@@ -52,13 +53,14 @@ class WebmanDebugBar extends DebugBar
          * 支持的 collectors，可以配置成 class 或者 callback
          */
         'collectors' => [
-            'webman',
             'phpinfo',
+            'webman',
             'messages',
             'exceptions',
             'time',
-            'request',
             'memory',
+            'request',
+            'route',
             'session',
             'laravelDB',
             'laravelRedis',
@@ -182,6 +184,7 @@ class WebmanDebugBar extends DebugBar
             'memory' => MemoryCollector::class,
             'exceptions' => ExceptionsCollector::class,
             'request' => RequestDataCollector::class,
+            'route' => RouteCollector::class,
             'session' => function () {
                 if (request() && request()->session()) {
                     return new SessionCollector();
