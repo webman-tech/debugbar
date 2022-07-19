@@ -5,6 +5,9 @@ namespace Kriss\WebmanDebugBar\DataCollector;
 use DebugBar\DataCollector\TimeDataCollector as DebugBarTimeDataCollector;
 use Illuminate\Database\Connection;
 use Illuminate\Database\Events\QueryExecuted;
+use Illuminate\Database\Events\TransactionBeginning;
+use Illuminate\Database\Events\TransactionCommitted;
+use Illuminate\Database\Events\TransactionRolledBack;
 use Kriss\WebmanDebugBar\DebugBar;
 use Kriss\WebmanDebugBar\Helper\ArrayHelper;
 use Kriss\WebmanDebugBar\Laravel\DataCollector\QueryCollector;
@@ -130,61 +133,61 @@ class LaravelQueryCollector extends QueryCollector
 
             $threshold = $this->config['slow_threshold'];
             if (!$threshold || $time > $threshold) {
-                $this->getRequestThisCollector()->addQuery($query, $bindings, $time, $connection);
+                if ($collector = $this->getRequestThisCollector()) {
+                    $collector->addQuery($query, $bindings, $time, $connection);
+                }
             }
         });
 
-        $db->getEventDispatcher()->listen(
-            \Illuminate\Database\Events\TransactionBeginning::class,
-            function ($transaction) {
-                $this->getRequestThisCollector()->collectTransactionEvent('Begin Transaction', $transaction->connection);
+        $db->getEventDispatcher()->listen(TransactionBeginning::class, function (TransactionBeginning $transaction) {
+            if ($collector = $this->getRequestThisCollector()) {
+                $collector->collectTransactionEvent('Begin Transaction', $transaction->connection);
             }
-        );
+        });
 
-        $db->getEventDispatcher()->listen(
-            \Illuminate\Database\Events\TransactionCommitted::class,
-            function ($transaction) {
-                $this->getRequestThisCollector()->collectTransactionEvent('Commit Transaction', $transaction->connection);
+        $db->getEventDispatcher()->listen(TransactionCommitted::class, function (TransactionCommitted $transaction) {
+            if ($collector = $this->getRequestThisCollector()) {
+                $collector->collectTransactionEvent('Commit Transaction', $transaction->connection);
             }
-        );
+        });
 
-        $db->getEventDispatcher()->listen(
-            \Illuminate\Database\Events\TransactionRolledBack::class,
-            function ($transaction) {
-                $this->getRequestThisCollector()->collectTransactionEvent('Rollback Transaction', $transaction->connection);
+        $db->getEventDispatcher()->listen(TransactionRolledBack::class, function (TransactionRolledBack $transaction) {
+            if ($collector = $this->getRequestThisCollector()) {
+                $collector->collectTransactionEvent('Rollback Transaction', $transaction->connection);
             }
-        );
+        });
 
-        $db->getEventDispatcher()->listen(
-            'connection.*.beganTransaction',
-            function ($event, $params) {
-                $this->getRequestThisCollector()->collectTransactionEvent('Begin Transaction', $params[0]);
+        $db->getEventDispatcher()->listen('connection.*.beganTransaction', function ($event, $params) {
+            if ($collector = $this->getRequestThisCollector()) {
+                $collector->collectTransactionEvent('Begin Transaction', $params[0]);
             }
-        );
+        });
 
-        $db->getEventDispatcher()->listen(
-            'connection.*.committed',
-            function ($event, $params) {
-                $this->getRequestThisCollector()->collectTransactionEvent('Commit Transaction', $params[0]);
+        $db->getEventDispatcher()->listen('connection.*.committed', function ($event, $params) {
+            if ($collector = $this->getRequestThisCollector()) {
+                $collector->collectTransactionEvent('Commit Transaction', $params[0]);
             }
-        );
+        });
 
-        $db->getEventDispatcher()->listen(
-            'connection.*.rollingBack',
-            function ($event, $params) {
-                $this->getRequestThisCollector()->collectTransactionEvent('Rollback Transaction', $params[0]);
+        $db->getEventDispatcher()->listen('connection.*.rollingBack', function ($event, $params) {
+            if ($collector = $this->getRequestThisCollector()) {
+                $collector->collectTransactionEvent('Rollback Transaction', $params[0]);
             }
-        );
+        });
     }
 
     /**
      * 获取 request 下每次新的当前 collector 对象
-     * @return $this
+     * @return $this|null
      */
-    protected function getRequestThisCollector(): self
+    protected function getRequestThisCollector(): ?self
     {
+        $debugBar = DebugBar::instance();
+        if (!$debugBar->hasCollector($this->getName())) {
+            return null;
+        }
         /** @var static $collector */
-        $collector = DebugBar::instance()->getCollector($this->getName());
+        $collector = $debugBar->getCollector($this->getName());
         return $collector;
     }
 }

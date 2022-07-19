@@ -73,7 +73,9 @@ class LaravelRedisCollector extends LaravelQueryCollector
             $parameters = $event->parameters;
             $time = $event->time;
 
-            $this->getRequestThisCollector()->addExec($command, $parameters, $time, $connection);
+            if ($collector = $this->getRequestThisCollector()) {
+                $collector->addExec($command, $parameters, $time, $connection);
+            }
         });
     }
 
