@@ -5,24 +5,16 @@ namespace Kriss\WebmanDebugBar\DataCollector;
 use DebugBar\DataCollector\DataCollector;
 use DebugBar\DataCollector\DataCollectorInterface;
 use DebugBar\DataCollector\Renderable;
-use Workerman\Protocols\Http\Session;
 
 class SessionCollector extends DataCollector implements DataCollectorInterface, Renderable
 {
-    protected Session $session;
-
-    public function __construct(Session $session)
-    {
-        $this->session = $session;
-    }
-
     /**
      * @inheritDoc
      */
     function collect()
     {
         $data = [];
-        foreach ($this->session->all() as $key => $value) {
+        foreach (request()->session()->all() as $key => $value) {
             $data[$key] = is_string($value) ? $value : $this->getDataFormatter()->formatVar($value);
         }
         return $data;

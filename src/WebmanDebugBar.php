@@ -184,7 +184,7 @@ class WebmanDebugBar extends DebugBar
             'request' => RequestDataCollector::class,
             'session' => function () {
                 if (request() && request()->session()) {
-                    return new SessionCollector(request()->session());
+                    return new SessionCollector();
                 }
                 return null;
             },

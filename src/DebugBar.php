@@ -7,7 +7,6 @@ class DebugBar
     public const REQUEST_KEY = '_debugbar_request_instance';
 
     protected static ?WebmanDebugBar $_instance = null;
-    protected static ?WebmanDebugBar $_instanceRequest = null;
 
     public static function instance(): WebmanDebugBar
     {
@@ -23,14 +22,10 @@ class DebugBar
 
         // 每个 request 请求单独创建一个实例
         if (!$request->{static::REQUEST_KEY}) {
-            $request->{static::REQUEST_KEY} = true;
-            static::$_instanceRequest = null;
-        }
-        if (!static::$_instanceRequest) {
             $config = config('plugin.kriss.webman-debugbar.app.debugbar', []);
-            static::$_instanceRequest = static::createDebugBar($config);
+            $request->{static::REQUEST_KEY} = static::createDebugBar($config);
         }
-        return static::$_instanceRequest;
+        return $request->{static::REQUEST_KEY};
     }
 
     protected static function createDebugBar(array $config): WebmanDebugBar

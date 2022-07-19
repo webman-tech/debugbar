@@ -3,37 +3,16 @@
 namespace Kriss\WebmanDebugBar;
 
 use DebugBar\HttpDriverInterface;
-use Webman\Http\Response;
-use Workerman\Protocols\Http\Session;
 
 class WebmanHttpDriver implements HttpDriverInterface
 {
-    protected ?Session $session = null;
-    protected ?Response $response = null;
-
-    protected function session(): Session
-    {
-        if ($this->session === null) {
-            $this->session = request()->session();
-        }
-        return $this->session;
-    }
-
-    protected function response(): Response
-    {
-        if ($this->response === null) {
-            $this->response = response();
-        }
-        return $this->response;
-    }
-
     /**
      * @inheritDoc
      */
     function setHeaders(array $headers)
     {
         foreach ($headers as $key => $value) {
-            $this->response()->header($key, $value);
+            response()->header($key, $value);
         }
     }
 
@@ -42,7 +21,7 @@ class WebmanHttpDriver implements HttpDriverInterface
      */
     function isSessionStarted()
     {
-        return !!$this->session();
+        return !!request()->session();
     }
 
     /**
@@ -50,7 +29,7 @@ class WebmanHttpDriver implements HttpDriverInterface
      */
     function setSessionValue($name, $value)
     {
-        $this->session()->set($name, $value);
+        request()->session()->set($name, $value);
     }
 
     /**
@@ -58,7 +37,7 @@ class WebmanHttpDriver implements HttpDriverInterface
      */
     function hasSessionValue($name)
     {
-        return $this->session()->has($name);
+        return request()->session()->has($name);
     }
 
     /**
@@ -66,7 +45,7 @@ class WebmanHttpDriver implements HttpDriverInterface
      */
     function getSessionValue($name)
     {
-        return $this->session()->get($name);
+        return request()->session()->get($name);
     }
 
     /**
@@ -74,6 +53,6 @@ class WebmanHttpDriver implements HttpDriverInterface
      */
     function deleteSessionValue($name)
     {
-        $this->session()->delete($name);
+        request()->session()->delete($name);
     }
 }
