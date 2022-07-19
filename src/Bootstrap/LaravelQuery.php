@@ -25,6 +25,7 @@ class LaravelQuery implements Bootstrap
 
         $collectorName = (new LaravelQueryCollector())->getName();
         $debugBar = DebugBar::instance();
+        $debugBar->boot();
         if (!$debugBar->hasCollector($collectorName)) {
             return;
         }

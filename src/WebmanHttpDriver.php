@@ -3,16 +3,27 @@
 namespace Kriss\WebmanDebugBar;
 
 use DebugBar\HttpDriverInterface;
+use Webman\Http\Request;
+use Webman\Http\Response;
 
 class WebmanHttpDriver implements HttpDriverInterface
 {
+    protected Request $request;
+    protected Response $response;
+
+    public function __construct(Request $request, Response $response)
+    {
+        $this->request = $request;
+        $this->response = $response;
+    }
+
     /**
      * @inheritDoc
      */
     function setHeaders(array $headers)
     {
         foreach ($headers as $key => $value) {
-            response()->header($key, $value);
+            $this->response->header($key, $value);
         }
     }
 
@@ -21,7 +32,7 @@ class WebmanHttpDriver implements HttpDriverInterface
      */
     function isSessionStarted()
     {
-        return !!request()->session();
+        return !!$this->request->session();
     }
 
     /**
@@ -29,7 +40,7 @@ class WebmanHttpDriver implements HttpDriverInterface
      */
     function setSessionValue($name, $value)
     {
-        request()->session()->set($name, $value);
+        $this->request->session()->set($name, $value);
     }
 
     /**
@@ -37,7 +48,7 @@ class WebmanHttpDriver implements HttpDriverInterface
      */
     function hasSessionValue($name)
     {
-        return request()->session()->has($name);
+        return $this->request->session()->has($name);
     }
 
     /**
@@ -45,7 +56,7 @@ class WebmanHttpDriver implements HttpDriverInterface
      */
     function getSessionValue($name)
     {
-        return request()->session()->get($name);
+        return $this->request->session()->get($name);
     }
 
     /**
@@ -53,6 +64,6 @@ class WebmanHttpDriver implements HttpDriverInterface
      */
     function deleteSessionValue($name)
     {
-        request()->session()->delete($name);
+        $this->request->session()->delete($name);
     }
 }

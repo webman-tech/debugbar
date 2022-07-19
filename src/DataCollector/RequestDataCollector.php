@@ -3,15 +3,27 @@
 namespace Kriss\WebmanDebugBar\DataCollector;
 
 use DebugBar\DataCollector\RequestDataCollector as OriginRequestDataCollector;
+use Webman\Http\Request;
+use Webman\Http\Response;
 
 class RequestDataCollector extends OriginRequestDataCollector
 {
+    protected Request $request;
+    protected Response $response;
+
+    public function __construct(Request $request, Response $response)
+    {
+        $this->request = $request;
+        $this->response = $response;
+    }
+
     /**
      * @inheritdoc
      */
     public function collect()
     {
-        $request = request();
+        $request = $this->request;
+        $response = $this->response;
         $data = [
             'app' => $request->app,
             'controller' => $request->controller,
@@ -26,6 +38,9 @@ class RequestDataCollector extends OriginRequestDataCollector
             'cookie' => $request->cookie(),
             'session' => $request->session()->all(),
             'server' => $_SERVER,
+            'response_status_code' => $response->getStatusCode(),
+            'response_reason_phrase' => $response->getReasonPhrase(),
+            'response_headers' => $response->getHeaders(),
         ];
         return array_map(function ($item) {
             if ($this->isHtmlVarDumperUsed()) {

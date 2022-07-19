@@ -25,6 +25,7 @@ class LaravelRedisExec implements Bootstrap
 
         $collectorName = (new LaravelRedisCollector())->getName();
         $debugBar = DebugBar::instance();
+        $debugBar->boot();
         if (!$debugBar->hasCollector($collectorName)) {
             return;
         }

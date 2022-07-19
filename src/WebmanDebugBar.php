@@ -2,6 +2,7 @@
 
 namespace Kriss\WebmanDebugBar;
 
+use Closure;
 use DebugBar\DataCollector\DataCollectorInterface;
 use DebugBar\DataCollector\ExceptionsCollector;
 use DebugBar\DataCollector\MessagesCollector;
@@ -17,11 +18,15 @@ use Kriss\WebmanDebugBar\DataCollector\RouteCollector;
 use Kriss\WebmanDebugBar\DataCollector\SessionCollector;
 use Kriss\WebmanDebugBar\DataCollector\TimeDataCollector;
 use Kriss\WebmanDebugBar\DataCollector\WebmanCollector;
+use Kriss\WebmanDebugBar\Ext\HttpExt;
 use Kriss\WebmanDebugBar\Helper\ArrayHelper;
 use Kriss\WebmanDebugBar\Helper\StringHelper;
 use Kriss\WebmanDebugBar\Storage\AutoCleanFileStorage;
 use Kriss\WebmanDebugBar\Traits\DebugBarOverwrite;
+use support\Container;
+use Throwable;
 use Webman\Http\Request;
+use Webman\Http\Response;
 use Webman\Route;
 
 class WebmanDebugBar extends DebugBar
@@ -29,9 +34,9 @@ class WebmanDebugBar extends DebugBar
     use DebugBarOverwrite;
 
     protected array $config = [
-        'enable' => false,
-        'http_driver' => true, // 定义 http_driver
+        'enabled' => true, // 弃用
         'storage' => true, // 定义 storage
+        'http_driver' => true, // 定义 http_driver
         'open_handler_url' => '/_debugbar/open', // storage 启用时打开历史的路由
         'asset_base_url' => '/_debugbar/assets', // 静态资源的路由
         'sample_url' => '/_debugbar/sample', // 示例页面，可用于查看 debugbar 信息，设为 null 关闭
@@ -52,18 +57,20 @@ class WebmanDebugBar extends DebugBar
         /**
          * 支持的 collectors，可以配置成 class 或者 callback
          */
-        'collectors' => [
-            'phpinfo',
-            'webman',
-            'messages',
-            'exceptions',
-            'time',
-            'memory',
-            'request',
-            'route',
-            'session',
-            'laravelDB',
-            'laravelRedis',
+        'collectors_boot' => [
+            'phpinfo' => true,
+            'webman' => true,
+            'messages' => true,
+            'exceptions' => true,
+            'time' => true,
+            'memory' => true,
+            'route' => true,
+            'laravelDB' => true,
+            'laravelRedis' => true,
+        ],
+        'collectors_response' => [
+            'request' => true,
+            'session' => true,
         ],
         'options' => [
             /**
@@ -79,45 +86,17 @@ class WebmanDebugBar extends DebugBar
 
     public function __construct(array $config = [])
     {
-        $collectors = $config['collectors'] ?? $this->config['collectors'];
         $this->config = ArrayHelper::merge($this->config, $config);
-        $this->config['collectors'] = $collectors;
-
-        if ($this->isEnable()) {
-            $this->boot();
-        }
-    }
-
-    /**
-     * 是否被启用
-     * @return bool
-     */
-    public function isEnable(): bool
-    {
-        return $this->config['enable'];
     }
 
     protected bool $booted = false;
 
-    /**
-     * 加载
-     */
-    protected function boot(): void
+    public function boot(): void
     {
         if ($this->booted) {
             return;
         }
 
-        // 启用 session 支持
-        if ($this->config['http_driver']) {
-            if ($this->config['http_driver'] === true) {
-                $this->config['http_driver'] = function () {
-                    return new WebmanHttpDriver();
-                };
-            }
-            $httpDriver = call_user_func($this->config['http_driver']);
-            $this->setHttpDriver($httpDriver);
-        }
         // 存储
         if ($this->config['storage']) {
             if ($this->config['storage'] === true) {
@@ -134,40 +113,22 @@ class WebmanDebugBar extends DebugBar
             $this->setStorage($storage);
         }
         // Collector
-        $this->bootCollectors();
-        // renderer
+        $collectorMaps = $this->collectorMaps();
+        foreach ($this->config['collectors_boot'] as $name => $builder) {
+            if ($builder === false) {
+                continue;
+            }
+            if ($builder === true && isset($collectorMaps[$name])) {
+                $builder = $collectorMaps[$name];
+            }
+            if ($collector = $this->buildCollector($builder)) {
+                $this->addCollector($collector);
+            }
+        }
+        // javascriptRenderer
         $this->bootJavascriptRenderer();
 
         $this->booted = true;
-    }
-
-    /**
-     * boot collector
-     */
-    protected function bootCollectors(): void
-    {
-        $collectorMaps = $this->collectorMaps();
-        foreach ($this->config['collectors'] as $collector) {
-            if (is_string($collector)) {
-                if (isset($collectorMaps[$collector])) {
-                    $collector = $collectorMaps[$collector];
-                }
-            }
-            if (is_string($collector) && strpos($collector, '\\') !== false && class_exists($collector)) {
-                $collector = new $collector;
-            }
-            if (is_callable($collector)) {
-                $collector = call_user_func($collector);
-            }
-
-            if (!$collector instanceof DataCollectorInterface) {
-                continue;
-            }
-            if ($this->hasCollector($collector->getName())) {
-                continue;
-            }
-            $this->addCollector($collector);
-        }
     }
 
     /**
@@ -183,14 +144,7 @@ class WebmanDebugBar extends DebugBar
             'time' => TimeDataCollector::class,
             'memory' => MemoryCollector::class,
             'exceptions' => ExceptionsCollector::class,
-            'request' => RequestDataCollector::class,
             'route' => RouteCollector::class,
-            'session' => function () {
-                if (request() && request()->session()) {
-                    return new SessionCollector();
-                }
-                return null;
-            },
             'laravelDB' => function () {
                 if (class_exists('Illuminate\Database\Capsule\Manager')) {
                     $timeDataCollector = null;
@@ -213,7 +167,36 @@ class WebmanDebugBar extends DebugBar
                 }
                 return null;
             },
+            'request' => function (Request $request, Response $response) {
+                return new RequestDataCollector($request, $response);
+            },
+            'session' => function (Request $request) {
+                if (request() && request()->session()) {
+                    return new SessionCollector($request);
+                }
+                return null;
+            },
         ];
+    }
+
+    /**
+     * @param string|callable $collector
+     * @param mixed ...$params
+     * @return DataCollectorInterface|null
+     */
+    protected function buildCollector($collector, ...$params): ?DataCollectorInterface
+    {
+        if (is_string($collector) && strpos($collector, '\\') !== false && class_exists($collector)) {
+            $collector = new $collector;
+        }
+        if (is_callable($collector)) {
+            $collector = call_user_func($collector, ...$params);
+        }
+        if (!$collector instanceof DataCollectorInterface) {
+            return null;
+        }
+
+        return $collector;
     }
 
     /**
@@ -246,9 +229,7 @@ class WebmanDebugBar extends DebugBar
      */
     public function registerRoute(): void
     {
-        if (!$this->isEnable()) {
-            return;
-        }
+        $this->boot();
 
         // 示例的路由
         if ($this->config['sample_url']) {
@@ -292,5 +273,164 @@ class WebmanDebugBar extends DebugBar
             }
         }
         return false;
+    }
+
+    public function modifyResponse(Request $request, Response $response): Response
+    {
+        // handle exception
+        if ($exception = $response->exception()) {
+            $this->addThrowable($exception);
+        }
+        // 启用 session 支持
+        if ($this->config['http_driver']) {
+            if ($this->config['http_driver'] === true) {
+                $this->config['http_driver'] = new WebmanHttpDriver($request, $response);
+            }
+            if (is_callable($this->config['http_driver'])) {
+                $this->config['http_driver'] = call_user_func($this->config['http_driver']);
+            }
+            $this->setHttpDriver($this->config['http_driver']);
+        }
+        // 添加 collectors
+        $collectorMaps = $this->collectorMaps();
+        foreach ($this->config['collectors_response'] as $name => $builder) {
+            if ($builder === false) {
+                continue;
+            }
+            if ($builder === true) {
+                $builder = $collectorMaps[$name];
+            }
+            if ($collector = $this->buildCollector($builder, $request, $response)) {
+                $this->addCollector($collector);
+            }
+        }
+        // 处理 response
+        /** @var HttpExt $httpExt */
+        $httpExt = Container::make(HttpExt::class, ['request' => $request, 'response' => $response]);
+        if ($httpExt->isRedirection()) {
+            $this->stackData();
+        } elseif ($httpExt->isHtmlAccepted() || $httpExt->isHtmlResponse()) {
+            $response = $this->attachDebugBarToHtmlResponse($response);
+        } else {
+            $this->sendDataInHeaders(true);
+        }
+
+        return $response;
+    }
+
+    /**
+     * @param Response $response
+     * @return Response
+     */
+    protected function attachDebugBarToHtmlResponse(Response $response): Response
+    {
+        $renderer = $this->getJavascriptRenderer();
+        $head = $renderer->renderHead();
+        $foot = $renderer->render();
+        $content = $response->rawBody();
+
+        $pos = strripos($content, '</head>');
+        if (false !== $pos) {
+            $content = substr($content, 0, $pos) . $head . substr($content, $pos);
+        } else {
+            $foot = $head . $foot;
+        }
+
+        $pos = strripos($content, '</body>');
+        if (false !== $pos) {
+            $content = substr($content, 0, $pos) . $foot . substr($content, $pos);
+        } else {
+            $content = $content . $foot;
+        }
+
+        $response->withBody($content);
+        $response->withoutHeader('Content-Length');
+
+        return $response;
+    }
+
+    /**
+     * @param Throwable $e
+     */
+    public function addThrowable(Throwable $e)
+    {
+        if ($this->hasCollector('exceptions')) {
+            /** @var ExceptionsCollector $collector */
+            $collector = $this->getCollector('exceptions');
+            $collector->addThrowable($e);
+        }
+    }
+
+    /**
+     * @param $message
+     * @param string $type
+     */
+    public function addMessage($message, string $type = 'info')
+    {
+        if ($this->hasCollector('messages')) {
+            /** @var MessagesCollector $collector */
+            $collector = $this->getCollector('messages');
+            $collector->addMessage($message, $type);
+        }
+    }
+
+    /**
+     * @param string $name
+     * @param string|null $label
+     */
+    public function startMeasure(string $name, string $label = null)
+    {
+        if ($this->hasCollector('time')) {
+            /** @var \DebugBar\DataCollector\TimeDataCollector $collector */
+            $collector = $this->getCollector('time');
+            $collector->startMeasure($name, $label);
+        }
+    }
+
+    /**
+     * @param string $name
+     */
+    public function stopMeasure(string $name)
+    {
+        if ($this->hasCollector('time')) {
+            /** @var \DebugBar\DataCollector\TimeDataCollector $collector */
+            $collector = $this->getCollector('time');
+            try {
+                $collector->stopMeasure($name);
+            } catch (\Exception $e) {
+                $this->addThrowable($e);
+            }
+        }
+    }
+
+    /**
+     * @param string $label
+     * @param float $start
+     * @param float $end
+     */
+    public function addMeasure(string $label, float $start, float $end)
+    {
+        if ($this->hasCollector('time')) {
+            /** @var \DebugBar\DataCollector\TimeDataCollector $collector */
+            $collector = $this->getCollector('time');
+            $collector->addMeasure($label, $start, $end);
+        }
+    }
+
+    /**
+     * @param string $label
+     * @param Closure $closure
+     * @return mixed
+     */
+    public function measure(string $label, Closure $closure)
+    {
+        if ($this->hasCollector('time')) {
+            /** @var \DebugBar\DataCollector\TimeDataCollector $collector */
+            $collector = $this->getCollector('time');
+            $result = $collector->measure($label, $closure);
+        } else {
+            $result = $closure();
+        }
+        return $result;
     }
 }

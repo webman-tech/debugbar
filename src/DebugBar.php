@@ -2,6 +2,17 @@
 
 namespace Kriss\WebmanDebugBar;
 
+use Closure;
+use Throwable;
+
+/**
+ * @method static void addThrowable(Throwable $e)
+ * @method static void addMessage($message, string $type = 'info')
+ * @method static void startMeasure(string $name, string $label = null)
+ * @method static void stopMeasure(string $name)
+ * @method static void addMeasure(string $label, float $start, float $end)
+ * @method static mixed measure(string $label, Closure $closure)
+ */
 class DebugBar
 {
     public const REQUEST_KEY = '_debugbar_request_instance';
