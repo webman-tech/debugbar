@@ -53,13 +53,14 @@ class HttpExt
      */
     public function isHtmlResponse(): bool
     {
-        $header = $this->response->getHeader('Content-Type');
-        if (is_array($header)) {
-            $header = implode(';', $header);
-        }
-        $is = strpos($header, 'text/html') !== false;
-        if ($is) {
-            return true;
+        if ($header = $this->response->getHeader('Content-Type')) {
+            if (is_array($header)) {
+                $header = implode(';', $header);
+            }
+            $is = strpos($header, 'text/html') !== false;
+            if ($is) {
+                return true;
+            }
         }
         if (strpos($this->response->rawBody(), '<html') === 0 || strpos($this->response->rawBody(), '<body') !== false) {
             return true;
