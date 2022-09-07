@@ -309,7 +309,7 @@ class WebmanDebugBar extends DebugBar
         $httpExt = Container::make(HttpExt::class, ['request' => $request, 'response' => $response]);
         if ($httpExt->isRedirection()) {
             $this->stackData();
-        } elseif ($httpExt->isHtmlAccepted() && $httpExt->isHtmlResponse()) {
+        } elseif ($httpExt->isHtmlAccepted() || $httpExt->isHtmlResponse()) {
             $response = $this->attachDebugBarToHtmlResponse($response);
         } else {
             $this->sendDataInHeaders(true);
