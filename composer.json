@@ -4,7 +4,7 @@
   "license": "MIT",
   "description": "Webman plugin kriss/webman-debugbar",
   "require": {
-    "php": ">=7.4",
+    "php": ">=7.2",
     "maximebf/debugbar": "^1.18",
     "workerman/webman-framework": "^1.3"
   },

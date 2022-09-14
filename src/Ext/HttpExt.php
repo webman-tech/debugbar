@@ -7,8 +7,14 @@ use Webman\Http\Response;
 
 class HttpExt
 {
-    protected Request $request;
-    protected Response $response;
+    /**
+     * @var Request
+     */
+    protected $request;
+    /**
+     * @var Response
+     */
+    protected $response;
 
     public function __construct(Request $request, Response $response)
     {

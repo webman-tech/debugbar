@@ -9,7 +9,10 @@ use Webman\Http\Request;
 
 class SessionCollector extends DataCollector implements DataCollectorInterface, Renderable
 {
-    protected Request $request;
+    /**
+     * @var Request
+     */
+    protected $request;
 
     public function __construct(Request $request)
     {

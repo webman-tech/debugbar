@@ -33,7 +33,10 @@ class WebmanDebugBar extends DebugBar
 {
     use DebugBarOverwrite;
 
-    protected array $config = [
+    /**
+     * @var array
+     */
+    protected $config = [
         'enabled' => true, // 弃用
         'storage' => true, // 定义 storage
         'http_driver' => true, // 定义 http_driver
@@ -89,7 +92,10 @@ class WebmanDebugBar extends DebugBar
         $this->config = ArrayHelper::merge($this->config, $config);
     }
 
-    protected bool $booted = false;
+    /**
+     * @var bool
+     */
+    protected $booted = false;
 
     public function boot(): void
     {

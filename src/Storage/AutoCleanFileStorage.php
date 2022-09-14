@@ -7,7 +7,10 @@ use Symfony\Component\Finder\Finder;
 
 class AutoCleanFileStorage extends FileStorage
 {
-    protected array $config = [
+    /**
+     * @var array
+     */
+    protected $config = [
         'gc_percent_by_files_count' => 50,
         'files_count_max' => 1000,
         'files_count_keep' => 400,

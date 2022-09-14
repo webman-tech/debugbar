@@ -12,7 +12,10 @@ class WebmanJavascriptRenderer extends JavascriptRenderer
     protected $ajaxHandlerBindToXHR = true;
     protected $ajaxHandlerBindToFetch = true;
 
-    protected array $assetsInfo = [
+    /**
+     * @var array
+     */
+    protected $assetsInfo = [
         'webman' => [
             'path' => __DIR__ . '/Resources',
             'css' => [

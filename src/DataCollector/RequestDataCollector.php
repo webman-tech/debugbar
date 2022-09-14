@@ -8,8 +8,14 @@ use Webman\Http\Response;
 
 class RequestDataCollector extends OriginRequestDataCollector
 {
-    protected Request $request;
-    protected Response $response;
+    /**
+     * @var Request
+     */
+    protected $request;
+    /**
+     * @var Response
+     */
+    protected $response;
 
     public function __construct(Request $request, Response $response)
     {

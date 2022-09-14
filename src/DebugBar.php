@@ -17,7 +17,10 @@ class DebugBar
 {
     public const REQUEST_KEY = '_debugbar_request_instance';
 
-    protected static ?WebmanDebugBar $_instance = null;
+    /**
+     * @var null|WebmanDebugBar
+     */
+    protected static $_instance = null;
 
     public static function instance(): WebmanDebugBar
     {

@@ -9,7 +9,10 @@ use Kriss\WebmanDebugBar\Laravel\DataFormatter\QueryFormatter;
 
 class LaravelRedisCollector extends LaravelQueryCollector
 {
-    protected array $config = [
+    /**
+     * @var array
+     */
+    protected $config = [
         'with_params' => true, // 将参数绑定上
         'backtrace' => true, // 显示 sql 来源
         'backtrace_exclude_paths' => [], // 排除 sql 来源
