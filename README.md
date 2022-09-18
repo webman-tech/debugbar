@@ -1,11 +1,11 @@
-# kriss/webman-debugbar
+# webman-tech/debugbar
 
 [PHP Debugbar](http://phpdebugbar.com/) for webman
 
 ## 安装
 
 ```bash
-composer require kriss/webman-debugbar --dev
+composer require webman-tech/debugbar --dev
 ```
 
 ## 使用

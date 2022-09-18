@@ -1,6 +1,6 @@
 <?php
 
-namespace Kriss\WebmanDebugBar\Traits;
+namespace WebmanTech\Debugbar\Traits;
 
 trait DebugBarOverwrite
 {

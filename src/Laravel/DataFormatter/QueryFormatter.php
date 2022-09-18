@@ -1,6 +1,6 @@
 <?php
 
-namespace Kriss\WebmanDebugBar\Laravel\DataFormatter;
+namespace WebmanTech\Debugbar\Laravel\DataFormatter;
 
 use DebugBar\DataFormatter\DataFormatter;
 

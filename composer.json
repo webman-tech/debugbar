@@ -1,8 +1,8 @@
 {
-  "name": "kriss/webman-debugbar",
+  "name": "webman-tech/debugbar",
   "type": "library",
   "license": "MIT",
-  "description": "Webman plugin kriss/webman-debugbar",
+  "description": "Webman plugin webman-tech/debugbar",
   "require": {
     "php": ">=7.2",
     "maximebf/debugbar": "^1.18",
@@ -10,7 +10,7 @@
   },
   "autoload": {
     "psr-4": {
-      "Kriss\\WebmanDebugBar\\": "src"
+      "WebmanTech\\Debugbar\\": "src"
     }
   },
   "require-dev": {

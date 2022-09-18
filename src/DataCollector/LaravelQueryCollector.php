@@ -1,6 +1,6 @@
 <?php
 
-namespace Kriss\WebmanDebugBar\DataCollector;
+namespace WebmanTech\Debugbar\DataCollector;
 
 use DebugBar\DataCollector\TimeDataCollector as DebugBarTimeDataCollector;
 use Illuminate\Database\Connection;
@@ -8,10 +8,10 @@ use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Database\Events\TransactionBeginning;
 use Illuminate\Database\Events\TransactionCommitted;
 use Illuminate\Database\Events\TransactionRolledBack;
-use Kriss\WebmanDebugBar\DebugBar;
-use Kriss\WebmanDebugBar\Helper\ArrayHelper;
-use Kriss\WebmanDebugBar\Laravel\DataCollector\QueryCollector;
-use Kriss\WebmanDebugBar\Laravel\DataFormatter\QueryFormatter;
+use WebmanTech\Debugbar\DebugBar;
+use WebmanTech\Debugbar\Helper\ArrayHelper;
+use WebmanTech\Debugbar\Laravel\DataCollector\QueryCollector;
+use WebmanTech\Debugbar\Laravel\DataFormatter\QueryFormatter;
 
 class LaravelQueryCollector extends QueryCollector
 {
@@ -88,7 +88,7 @@ class LaravelQueryCollector extends QueryCollector
     {
         $this->mergeBacktraceExcludePaths([
             '/webman-debugbar/',
-            '/vendor/kriss/webman-debugbar',
+            '/vendor/webman-tech/debugbar',
             '/vendor/illuminate/support',
             '/vendor/illuminate/database',
             '/vendor/illuminate/events',

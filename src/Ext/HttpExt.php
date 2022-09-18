@@ -1,6 +1,6 @@
 <?php
 
-namespace Kriss\WebmanDebugBar\Ext;
+namespace WebmanTech\Debugbar\Ext;
 
 use Webman\Http\Request;
 use Webman\Http\Response;

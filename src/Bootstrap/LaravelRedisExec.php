@@ -1,10 +1,10 @@
 <?php
 
-namespace Kriss\WebmanDebugBar\Bootstrap;
+namespace WebmanTech\Debugbar\Bootstrap;
 
 use Illuminate\Redis\RedisManager;
-use Kriss\WebmanDebugBar\DataCollector\LaravelRedisCollector;
-use Kriss\WebmanDebugBar\DebugBar;
+use WebmanTech\Debugbar\DataCollector\LaravelRedisCollector;
+use WebmanTech\Debugbar\DebugBar;
 use support\Redis;
 use Webman\Bootstrap;
 

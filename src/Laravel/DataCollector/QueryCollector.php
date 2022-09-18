@@ -1,6 +1,6 @@
 <?php
 
-namespace Kriss\WebmanDebugBar\Laravel\DataCollector;
+namespace WebmanTech\Debugbar\Laravel\DataCollector;
 
 use DebugBar\DataCollector\PDO\PDOCollector;
 use DebugBar\DataCollector\TimeDataCollector;

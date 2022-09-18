@@ -1,6 +1,6 @@
 <?php
 
-namespace Kriss\WebmanDebugBar;
+namespace WebmanTech\Debugbar;
 
 use DebugBar\HttpDriverInterface;
 use Webman\Http\Request;

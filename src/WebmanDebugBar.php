@@ -1,6 +1,6 @@
 <?php
 
-namespace Kriss\WebmanDebugBar;
+namespace WebmanTech\Debugbar;
 
 use Closure;
 use DebugBar\DataCollector\DataCollectorInterface;
@@ -9,20 +9,20 @@ use DebugBar\DataCollector\MessagesCollector;
 use DebugBar\DebugBar;
 use DebugBar\OpenHandler;
 use DebugBar\Storage\FileStorage;
-use Kriss\WebmanDebugBar\DataCollector\LaravelQueryCollector;
-use Kriss\WebmanDebugBar\DataCollector\LaravelRedisCollector;
-use Kriss\WebmanDebugBar\DataCollector\MemoryCollector;
-use Kriss\WebmanDebugBar\DataCollector\PhpInfoCollector;
-use Kriss\WebmanDebugBar\DataCollector\RequestDataCollector;
-use Kriss\WebmanDebugBar\DataCollector\RouteCollector;
-use Kriss\WebmanDebugBar\DataCollector\SessionCollector;
-use Kriss\WebmanDebugBar\DataCollector\TimeDataCollector;
-use Kriss\WebmanDebugBar\DataCollector\WebmanCollector;
-use Kriss\WebmanDebugBar\Ext\HttpExt;
-use Kriss\WebmanDebugBar\Helper\ArrayHelper;
-use Kriss\WebmanDebugBar\Helper\StringHelper;
-use Kriss\WebmanDebugBar\Storage\AutoCleanFileStorage;
-use Kriss\WebmanDebugBar\Traits\DebugBarOverwrite;
+use WebmanTech\Debugbar\DataCollector\LaravelQueryCollector;
+use WebmanTech\Debugbar\DataCollector\LaravelRedisCollector;
+use WebmanTech\Debugbar\DataCollector\MemoryCollector;
+use WebmanTech\Debugbar\DataCollector\PhpInfoCollector;
+use WebmanTech\Debugbar\DataCollector\RequestDataCollector;
+use WebmanTech\Debugbar\DataCollector\RouteCollector;
+use WebmanTech\Debugbar\DataCollector\SessionCollector;
+use WebmanTech\Debugbar\DataCollector\TimeDataCollector;
+use WebmanTech\Debugbar\DataCollector\WebmanCollector;
+use WebmanTech\Debugbar\Ext\HttpExt;
+use WebmanTech\Debugbar\Helper\ArrayHelper;
+use WebmanTech\Debugbar\Helper\StringHelper;
+use WebmanTech\Debugbar\Storage\AutoCleanFileStorage;
+use WebmanTech\Debugbar\Traits\DebugBarOverwrite;
 use support\Container;
 use Throwable;
 use Webman\Http\Request;

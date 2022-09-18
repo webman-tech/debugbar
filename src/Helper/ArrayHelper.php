@@ -1,6 +1,6 @@
 <?php
 
-namespace Kriss\WebmanDebugBar\Helper;
+namespace WebmanTech\Debugbar\Helper;
 
 class ArrayHelper
 {

@@ -1,10 +1,10 @@
 <?php
 
-namespace Kriss\WebmanDebugBar\Bootstrap;
+namespace WebmanTech\Debugbar\Bootstrap;
 
 use Illuminate\Database\Capsule\Manager as Capsule;
-use Kriss\WebmanDebugBar\DataCollector\LaravelQueryCollector;
-use Kriss\WebmanDebugBar\DebugBar;
+use WebmanTech\Debugbar\DataCollector\LaravelQueryCollector;
+use WebmanTech\Debugbar\DebugBar;
 use support\Db;
 use Webman\Bootstrap;
 

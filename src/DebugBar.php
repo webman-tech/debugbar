@@ -1,6 +1,6 @@
 <?php
 
-namespace Kriss\WebmanDebugBar;
+namespace WebmanTech\Debugbar;
 
 use Closure;
 use Throwable;

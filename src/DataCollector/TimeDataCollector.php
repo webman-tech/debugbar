@@ -1,6 +1,6 @@
 <?php
 
-namespace Kriss\WebmanDebugBar\DataCollector;
+namespace WebmanTech\Debugbar\DataCollector;
 
 use DebugBar\DataCollector\TimeDataCollector as OriginTimeDataCollector;
 

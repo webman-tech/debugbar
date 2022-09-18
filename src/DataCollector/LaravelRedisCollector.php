@@ -1,11 +1,11 @@
 <?php
 
-namespace Kriss\WebmanDebugBar\DataCollector;
+namespace WebmanTech\Debugbar\DataCollector;
 
 use Illuminate\Redis\Connections\Connection;
 use Illuminate\Redis\Events\CommandExecuted;
 use Illuminate\Support\Str;
-use Kriss\WebmanDebugBar\Laravel\DataFormatter\QueryFormatter;
+use WebmanTech\Debugbar\Laravel\DataFormatter\QueryFormatter;
 
 class LaravelRedisCollector extends LaravelQueryCollector
 {
@@ -34,7 +34,7 @@ class LaravelRedisCollector extends LaravelQueryCollector
     {
         $this->mergeBacktraceExcludePaths([
             '/webman-debugbar/',
-            '/vendor/kriss/webman-debugbar',
+            '/vendor/webman-tech/debugbar',
             '/vendor/illuminate/support',
             '/vendor/illuminate/redis',
             '/vendor/illuminate/events',

@@ -1,6 +1,6 @@
 <?php
 
-namespace Kriss\WebmanDebugBar\Storage;
+namespace WebmanTech\Debugbar\Storage;
 
 use DebugBar\Storage\FileStorage;
 use Symfony\Component\Finder\Finder;

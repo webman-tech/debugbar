@@ -1,8 +1,8 @@
 <?php
 
-namespace Kriss\WebmanDebugBar\Middleware;
+namespace WebmanTech\Debugbar\Middleware;
 
-use Kriss\WebmanDebugBar\DebugBar;
+use WebmanTech\Debugbar\DebugBar;
 use Webman\Http\Request;
 use Webman\Http\Response;
 use Webman\MiddlewareInterface;

@@ -1,5 +1,5 @@
 <?php
-namespace Kriss\WebmanDebugBar;
+namespace WebmanTech\Debugbar;
 
 class Install
 {
@@ -9,7 +9,7 @@ class Install
      * @var array
      */
     protected static $pathRelation = array (
-  'config/plugin/kriss/webman-debugbar' => 'config/plugin/kriss/webman-debugbar',
+  'config/plugin/webman-tech/debugbar' => 'config/plugin/webman-tech/debugbar',
 );
 
     /**
