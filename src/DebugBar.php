@@ -28,7 +28,7 @@ class DebugBar
         // 非 request 请求使用一个实例
         if (!$request) {
             if (!static::$_instance) {
-                $config = config('plugin.kriss.webman-debugbar.app.debugbar', []);
+                $config = config('plugin.webman-tech.debugbar.app.debugbar', []);
                 static::$_instance = static::createDebugBar($config);
             }
             return static::$_instance;
@@ -36,7 +36,7 @@ class DebugBar
 
         // 每个 request 请求单独创建一个实例
         if (!$request->{static::REQUEST_KEY}) {
-            $config = config('plugin.kriss.webman-debugbar.app.debugbar', []);
+            $config = config('plugin.webman-tech.debugbar.app.debugbar', []);
             $request->{static::REQUEST_KEY} = static::createDebugBar($config);
         }
         return $request->{static::REQUEST_KEY};
