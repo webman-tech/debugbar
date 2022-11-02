@@ -87,11 +87,11 @@ class LaravelQueryCollector extends QueryCollector
     protected function setConfig()
     {
         $this->mergeBacktraceExcludePaths([
-            '/webman-debugbar/',
             '/vendor/webman-tech/debugbar',
             '/vendor/illuminate/support',
             '/vendor/illuminate/database',
             '/vendor/illuminate/events',
+            '/vendor/jenssegers/mongodb', // jenssegers/mongodb
         ]);
 
         $this->setDataFormatter(new QueryFormatter());
