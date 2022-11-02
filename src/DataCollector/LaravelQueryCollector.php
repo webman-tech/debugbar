@@ -128,10 +128,13 @@ class LaravelQueryCollector extends QueryCollector
 
     public function addListener(Connection $db)
     {
-        $db->listen(function (QueryExecuted $event) {
+        $db->listen(function (QueryExecuted $event) use ($db) {
+            $connection = $event->connection;
+            if (!$this->isEventConnectionEqual($db, $connection)) {
+                return;
+            }
             $bindings = $event->bindings;
             $time = $event->time;
-            $connection = $event->connection;
             $query = $event->sql;
 
             $threshold = $this->config['slow_threshold'];
@@ -142,19 +145,28 @@ class LaravelQueryCollector extends QueryCollector
             }
         });
 
-        $db->getEventDispatcher()->listen(TransactionBeginning::class, function (TransactionBeginning $transaction) {
+        $db->getEventDispatcher()->listen(TransactionBeginning::class, function (TransactionBeginning $transaction) use ($db) {
+            if (!$this->isEventConnectionEqual($db, $transaction->connection)) {
+                return;
+            }
             if ($collector = $this->getRequestThisCollector()) {
                 $collector->collectTransactionEvent('Begin Transaction', $transaction->connection);
             }
         });
 
-        $db->getEventDispatcher()->listen(TransactionCommitted::class, function (TransactionCommitted $transaction) {
+        $db->getEventDispatcher()->listen(TransactionCommitted::class, function (TransactionCommitted $transaction) use ($db) {
+            if (!$this->isEventConnectionEqual($db, $transaction->connection)) {
+                return;
+            }
             if ($collector = $this->getRequestThisCollector()) {
                 $collector->collectTransactionEvent('Commit Transaction', $transaction->connection);
             }
         });
 
-        $db->getEventDispatcher()->listen(TransactionRolledBack::class, function (TransactionRolledBack $transaction) {
+        $db->getEventDispatcher()->listen(TransactionRolledBack::class, function (TransactionRolledBack $transaction) use ($db) {
+            if (!$this->isEventConnectionEqual($db, $transaction->connection)) {
+                return;
+            }
             if ($collector = $this->getRequestThisCollector()) {
                 $collector->collectTransactionEvent('Rollback Transaction', $transaction->connection);
             }
@@ -192,5 +204,17 @@ class LaravelQueryCollector extends QueryCollector
         /** @var static $collector */
         $collector = $debugBar->getCollector($this->getName());
         return $collector;
+    }
+
+    /**
+     * 由于 event 可能是 Container 下的，则事件会重复绑定
+     * 因此粗腰判断事件的 connection 是否是当前 DB 的
+     * @param Connection $connection
+     * @param Connection $eventConnection
+     * @return bool
+     */
+    protected function isEventConnectionEqual(Connection $connection, Connection $eventConnection): bool
+    {
+        return $connection->getName() === $eventConnection->getName();
     }
 }
