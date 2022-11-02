@@ -126,6 +126,17 @@ class LaravelQueryCollector extends QueryCollector
         }
     }
 
+    public function addQuery($query, $bindings, $time, $connection)
+    {
+        parent::addQuery($query, $bindings, $time, $connection);
+
+        // 给 connection 添加 connectionName
+        $lastIndex = count($this->queries) - 1;
+        $lastQuery = $this->queries[$lastIndex];
+        $lastQuery['connection'] = $connection->getName() . '__' . $lastQuery['connection']; // 目前只能用 __ 分隔，其他字符比如冒号、斜杠等会导致js错误
+        $this->queries[$lastIndex] = $lastQuery;
+    }
+
     public function addListener(Connection $db)
     {
         $db->listen(function (QueryExecuted $event) use ($db) {
