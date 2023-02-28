@@ -19,9 +19,13 @@ class LaravelQuery implements Bootstrap
             return;
         }
         $connections = array_keys(config('database.connections'));
+        if ($default = config('database.default')) {
+            $connections[] = $default;
+        }
         if (!$connections) {
             return;
         }
+        $connections = array_unique($connections);
 
         $collectorName = (new LaravelQueryCollector())->getName();
         $debugBar = DebugBar::instance();

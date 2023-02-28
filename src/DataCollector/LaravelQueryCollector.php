@@ -219,7 +219,7 @@ class LaravelQueryCollector extends QueryCollector
 
     /**
      * 由于 event 可能是 Container 下的，则事件会重复绑定
-     * 因此粗腰判断事件的 connection 是否是当前 DB 的
+     * 因此此处判断事件的 connection 是否是当前 DB 的
      * @param Connection $connection
      * @param Connection $eventConnection
      * @return bool
