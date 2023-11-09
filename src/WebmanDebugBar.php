@@ -16,6 +16,7 @@ use WebmanTech\Debugbar\DataCollector\PhpInfoCollector;
 use WebmanTech\Debugbar\DataCollector\RequestDataCollector;
 use WebmanTech\Debugbar\DataCollector\RouteCollector;
 use WebmanTech\Debugbar\DataCollector\SessionCollector;
+use WebmanTech\Debugbar\DataCollector\ThinkPdoCollector;
 use WebmanTech\Debugbar\DataCollector\TimeDataCollector;
 use WebmanTech\Debugbar\DataCollector\WebmanCollector;
 use WebmanTech\Debugbar\Ext\HttpExt;
@@ -70,6 +71,7 @@ class WebmanDebugBar extends DebugBar
             'memory' => true,
             'route' => true,
             'laravelDB' => true,
+            'thinkDb' => true,
             'laravelRedis' => true,
         ],
         'collectors_response' => [
@@ -200,6 +202,17 @@ class WebmanDebugBar extends DebugBar
                 }
                 return null;
             },
+            'thinkDb' => function () {
+                if (class_exists('think\facade\Db')) {
+                    $timeDataCollector = null;
+                    if ($this->hasCollector('time')) {
+                        /** @var \DebugBar\DataCollector\TimeDataCollector $timeDataCollector */
+                        $timeDataCollector = $this->getCollector('time');
+                    }
+                    return new ThinkPdoCollector(config('thinkorm', []), $timeDataCollector);
+                }
+                return null;
+            }
         ];
     }
 
