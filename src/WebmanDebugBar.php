@@ -9,6 +9,7 @@ use DebugBar\DataCollector\MessagesCollector;
 use DebugBar\DebugBar;
 use DebugBar\OpenHandler;
 use DebugBar\Storage\FileStorage;
+use DebugBar\Storage\StorageInterface;
 use WebmanTech\Debugbar\DataCollector\LaravelQueryCollector;
 use WebmanTech\Debugbar\DataCollector\LaravelRedisCollector;
 use WebmanTech\Debugbar\DataCollector\MemoryCollector;
@@ -92,6 +93,16 @@ class WebmanDebugBar extends DebugBar
         $this->config = ArrayHelper::merge($this->config, $config);
     }
 
+    private static $staticCache = [];
+
+    private function getOrSetStaticCache(string $key, callable $fn)
+    {
+        if (!isset(static::$staticCache[$key])) {
+            static::$staticCache[$key] = $fn();
+        }
+        return static::$staticCache[$key];
+    }
+
     /**
      * @var bool
      */
@@ -105,29 +116,36 @@ class WebmanDebugBar extends DebugBar
 
         // 存储
         if ($this->config['storage']) {
-            if ($this->config['storage'] === true) {
-                $this->config['storage'] = function () {
-                    $path = runtime_path() . '/debugbar';
-                    if (class_exists('Symfony\Component\Finder\Finder')) {
-                        return new AutoCleanFileStorage($path);
-                    }
-                    // 使用该存储形式会导致文件数量极多
-                    return new FileStorage($path);
-                };
-            }
-            $storage = call_user_func($this->config['storage']);
-            $this->setStorage($storage);
+            $this->setStorage($this->getOrSetStaticCache('storage', function (): StorageInterface {
+                if ($this->config['storage'] === true) {
+                    $this->config['storage'] = function () {
+                        $path = runtime_path() . '/debugbar';
+                        if (class_exists('Symfony\Component\Finder\Finder')) {
+                            return new AutoCleanFileStorage($path);
+                        }
+                        // 使用该存储形式会导致文件数量极多
+                        return new FileStorage($path);
+                    };
+                }
+                return call_user_func($this->config['storage']);
+            }));
         }
         // Collector
         $collectorMaps = $this->collectorMaps();
         foreach ($this->config['collectors_boot'] as $name => $builder) {
-            if ($builder === false) {
-                continue;
-            }
-            if ($builder === true && isset($collectorMaps[$name])) {
-                $builder = $collectorMaps[$name];
-            }
-            if ($collector = $this->buildCollector($builder)) {
+            $collector = $this->getOrSetStaticCache('collector_' . $name, function () use ($builder, $name, $collectorMaps) {
+                if ($builder === false) {
+                    return null;
+                }
+                if ($builder === true && isset($collectorMaps[$name])) {
+                    $builder = $collectorMaps[$name];
+                }
+                if ($collector = $this->buildCollector($builder)) {
+                    return $collector;
+                }
+                return null;
+            });
+            if ($collector instanceof DataCollectorInterface) {
                 $this->addCollector($collector);
             }
         }

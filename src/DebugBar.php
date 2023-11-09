@@ -28,22 +28,21 @@ class DebugBar
         // 非 request 请求使用一个实例
         if (!$request) {
             if (!static::$_instance) {
-                $config = config('plugin.webman-tech.debugbar.app.debugbar', []);
-                static::$_instance = static::createDebugBar($config);
+                static::$_instance = static::createDebugBar();
             }
             return static::$_instance;
         }
 
         // 每个 request 请求单独创建一个实例
         if (!$request->{static::REQUEST_KEY}) {
-            $config = config('plugin.webman-tech.debugbar.app.debugbar', []);
-            $request->{static::REQUEST_KEY} = static::createDebugBar($config);
+            $request->{static::REQUEST_KEY} = static::createDebugBar();
         }
         return $request->{static::REQUEST_KEY};
     }
 
-    protected static function createDebugBar(array $config): WebmanDebugBar
+    protected static function createDebugBar(): WebmanDebugBar
     {
+        $config = config('plugin.webman-tech.debugbar.app.debugbar', []);
         return new WebmanDebugBar($config);
     }
 
