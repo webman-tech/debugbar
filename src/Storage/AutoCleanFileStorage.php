@@ -2,7 +2,6 @@
 
 namespace WebmanTech\Debugbar\Storage;
 
-use DebugBar\Storage\FileStorage;
 use Symfony\Component\Finder\Finder;
 
 class AutoCleanFileStorage extends FileStorage
