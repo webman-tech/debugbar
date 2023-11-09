@@ -219,7 +219,7 @@ div.phpdebugbar-body {
 div.phpdebugbar-header {
     min-height: 30px;
     line-height: 20px;
-    padding-left: 39px;
+    padding-left: 0;
     text-shadow: 1px 1px #FFF;
 }
 
