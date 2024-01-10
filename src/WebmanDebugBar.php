@@ -43,6 +43,7 @@ class WebmanDebugBar extends DebugBar
         'storage' => true, // 定义 storage
         'http_driver' => true, // 定义 http_driver
         'open_handler_url' => '/_debugbar/open', // storage 启用时打开历史的路由
+        'open_handler_url_make' => null, // 构建用于访问的 open_handler 的 url 地址，callable 类型，用于二级目录访问的场景
         'asset_base_url' => '/_debugbar/assets', // 静态资源的路由
         'sample_url' => '/_debugbar/sample', // 示例页面，可用于查看 debugbar 信息，设为 null 关闭
         'javascript_renderer_options' => [], // 其他 javascriptRenderer 参数
@@ -255,7 +256,11 @@ class WebmanDebugBar extends DebugBar
         $renderer = $this->getJavascriptRenderer($this->config['asset_base_url']);
         // 历史访问
         if ($this->getStorage() && $this->config['open_handler_url']) {
-            $renderer->setOpenHandlerUrl($this->config['open_handler_url']);
+            $url = $this->config['open_handler_url'];
+            if (is_callable($this->config['open_handler_url_make'])) {
+                $url = call_user_func($this->config['open_handler_url_make'], $url);
+            }
+            $renderer->setOpenHandlerUrl($url);
         }
         // 其他配置参数
         $renderer->setOptions($this->config['javascript_renderer_options']);
