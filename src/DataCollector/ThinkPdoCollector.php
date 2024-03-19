@@ -2,11 +2,11 @@
 
 namespace WebmanTech\Debugbar\DataCollector;
 
-use DebugBar\DataCollector\PDO\PDOCollector;
-use DebugBar\DataCollector\PDO\TraceablePDO;
 use DebugBar\DataCollector\TimeDataCollector;
 use think\db\PDOConnection;
 use think\facade\Db;
+use WebmanTech\Debugbar\DataCollector\PDO\PDOCollector;
+use WebmanTech\Debugbar\DataCollector\PDO\TraceablePDO;
 
 class ThinkPdoCollector extends PDOCollector
 {
