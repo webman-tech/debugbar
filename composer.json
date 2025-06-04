@@ -1,0 +1,18 @@
+{
+  "name": "webman-tech/debugbar",
+  "type": "library",
+  "license": "MIT",
+  "description": "Webman plugin webman-tech/debugbar",
+  "autoload": {
+    "psr-4": {
+      "WebmanTech\\Debugbar\\": "src"
+    }
+  },
+  "config": {
+    "sort-packages": true
+  },
+  "require": {
+    "php": "^8.2",
+    "php-debugbar/php-debugbar": "^2.0"
+  }
+}
