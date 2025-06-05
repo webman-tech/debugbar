@@ -41,16 +41,11 @@ class HttpExt
             return false;
         }
 
-        $header = $this->request->header('Accept');
+        $header = $this->request->header('accept');
         if (is_array($header)) {
             $header = implode(', ', $header);
         }
-        $is = strpos($header, 'text/html') !== false;
-        if ($is) {
-            return true;
-        }
-
-        return false;
+        return str_contains((string)$header, 'text/html');
     }
 
     /**

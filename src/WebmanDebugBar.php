@@ -122,6 +122,7 @@ class WebmanDebugBar extends DebugBar
 
         // 存储
         if ($this->config['storage']) {
+            /** @phpstan-ignore-next-line */
             $this->setStorage($this->getOrSetStaticCache('storage', function (): StorageInterface {
                 if ($this->config['storage'] === true) {
                     $this->config['storage'] = function () {
@@ -133,7 +134,11 @@ class WebmanDebugBar extends DebugBar
                         return new FileStorage($path);
                     };
                 }
-                return call_user_func($this->config['storage']);
+                $storage = call_user_func($this->config['storage']);
+                if (!$storage instanceof StorageInterface) {
+                    throw new \InvalidArgumentException('storage must be instance of ' . StorageInterface::class);
+                }
+                return $storage;
             }));
         }
         // Collector
@@ -214,7 +219,7 @@ class WebmanDebugBar extends DebugBar
                         /** @var \DebugBar\DataCollector\TimeDataCollector $timeDataCollector */
                         $timeDataCollector = $this->getCollector('time');
                     }
-                    return new ThinkPdoCollector(config('thinkorm', []), $timeDataCollector);
+                    return new ThinkPdoCollector((array)config('thinkorm', []), $timeDataCollector);
                 }
                 return null;
             }
@@ -288,7 +293,7 @@ class WebmanDebugBar extends DebugBar
         if ($this->config['open_handler_url']) {
             Route::get($this->config['open_handler_url'], function () {
                 $openHandler = new OpenHandler($this);
-                $data = $openHandler->handle(request()?->get() ?? [], false, true);
+                $data = $openHandler->handle((array)(request()?->get() ?? []), false, true);
                 return response($data);
             });
         }

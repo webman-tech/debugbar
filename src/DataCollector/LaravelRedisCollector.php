@@ -136,6 +136,7 @@ class LaravelRedisCollector extends LaravelQueryCollector
             'source' => $source,
             'explain' => $explainResults,
             'connection' => $connection->getName(),
+            /** @phpstan-ignore-next-line */
             'driver' => get_class($connection->client()),
             'hints' => null,
             'show_copy' => $this->showCopyButton,

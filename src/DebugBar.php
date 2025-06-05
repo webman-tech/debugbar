@@ -43,7 +43,7 @@ class DebugBar
 
     protected static function createDebugBar(): WebmanDebugBar
     {
-        $config = ConfigHelper::get('app.debugbar', []);
+        $config = (array)ConfigHelper::get('app.debugbar', []);
         return new WebmanDebugBar($config);
     }
 

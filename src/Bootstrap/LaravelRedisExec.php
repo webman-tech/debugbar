@@ -19,7 +19,7 @@ class LaravelRedisExec implements Bootstrap
             return;
         }
         /** @var string[] $connections */
-        $connections = array_keys(config('redis'));
+        $connections = array_keys((array)config('redis'));
         if (!$connections) {
             return;
         }

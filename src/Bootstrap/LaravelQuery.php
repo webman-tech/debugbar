@@ -3,10 +3,10 @@
 namespace WebmanTech\Debugbar\Bootstrap;
 
 use Illuminate\Database\Capsule\Manager as Capsule;
-use WebmanTech\Debugbar\DataCollector\LaravelQueryCollector;
-use WebmanTech\Debugbar\DebugBar;
 use support\Db;
 use Webman\Bootstrap;
+use WebmanTech\Debugbar\DataCollector\LaravelQueryCollector;
+use WebmanTech\Debugbar\DebugBar;
 
 class LaravelQuery implements Bootstrap
 {
@@ -18,7 +18,7 @@ class LaravelQuery implements Bootstrap
         if (!class_exists(Capsule::class)) {
             return;
         }
-        $connections = array_keys(config('database.connections'));
+        $connections = array_keys((array)config('database.connections', []));
         if ($default = config('database.default')) {
             $connections[] = $default;
         }
@@ -37,7 +37,7 @@ class LaravelQuery implements Bootstrap
         $collector = $debugBar->getCollector($collectorName);
 
         foreach ($connections as $connection) {
-            $collector->addListener(Db::connection($connection));
+            $collector->addListener(Db::connection((string)$connection));
         }
     }
 }
