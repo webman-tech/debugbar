@@ -3,10 +3,10 @@
 namespace WebmanTech\Debugbar\Bootstrap;
 
 use Illuminate\Redis\RedisManager;
-use WebmanTech\Debugbar\DataCollector\LaravelRedisCollector;
-use WebmanTech\Debugbar\DebugBar;
 use support\Redis;
 use Webman\Bootstrap;
+use WebmanTech\Debugbar\DataCollector\LaravelRedisCollector;
+use WebmanTech\Debugbar\DebugBar;
 
 class LaravelRedisExec implements Bootstrap
 {
@@ -18,6 +18,7 @@ class LaravelRedisExec implements Bootstrap
         if (!class_exists(RedisManager::class)) {
             return;
         }
+        /** @var string[] $connections */
         $connections = array_keys(config('redis'));
         if (!$connections) {
             return;
