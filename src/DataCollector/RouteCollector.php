@@ -18,6 +18,7 @@ class RouteCollector extends DataCollector implements DataCollectorInterface, Re
             return [];
         }
         $data = [];
+        /* @phpstan-ignore-next-line */
         if ($route = $request->route) {
             $data = [
                 'uri' => $request->method() . ' ' . $request->uri(),

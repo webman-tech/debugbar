@@ -38,7 +38,7 @@ class WebmanHttpDriver implements HttpDriverInterface
      */
     function isSessionStarted()
     {
-        return !!$this->request->session();
+        return !!($this->request->context['session'] ?? null);
     }
 
     /**

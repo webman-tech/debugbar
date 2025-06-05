@@ -198,6 +198,7 @@ class WebmanDebugBar extends DebugBar
                 return new RequestDataCollector($request, $response);
             },
             'session' => function (Request $request) {
+                /* @phpstan-ignore-next-line */
                 if (request() && request()->session()) {
                     return new SessionCollector($request);
                 }
@@ -255,6 +256,7 @@ class WebmanDebugBar extends DebugBar
     {
         $renderer = $this->getJavascriptRenderer($this->config['asset_base_url']);
         // 历史访问
+        /* @phpstan-ignore-next-line */
         if ($this->getStorage() && $this->config['open_handler_url']) {
             $url = $this->config['open_handler_url'];
             if (is_callable($this->config['open_handler_url_make'])) {
