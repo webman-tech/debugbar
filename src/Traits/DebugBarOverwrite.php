@@ -12,9 +12,9 @@ trait DebugBarOverwrite
     {
         $request = request();
         $request_variables = array(
-            'method' => $request->method(),
-            'uri' => $request->uri(),
-            'ip' => $request->getRealIp(),
+            'method' => $request?->method(),
+            'uri' => $request?->uri(),
+            'ip' => $request?->getRealIp(),
         );
 
         // 以下未修改

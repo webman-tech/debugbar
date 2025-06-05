@@ -288,7 +288,7 @@ class WebmanDebugBar extends DebugBar
         if ($this->config['open_handler_url']) {
             Route::get($this->config['open_handler_url'], function () {
                 $openHandler = new OpenHandler($this);
-                $data = $openHandler->handle(request()->get(), false, true);
+                $data = $openHandler->handle(request()?->get() ?? [], false, true);
                 return response($data);
             });
         }
