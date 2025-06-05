@@ -96,14 +96,14 @@ class WebmanDebugBar extends DebugBar
         $this->config = ArrayHelper::merge($this->config, $config);
     }
 
-    private static $staticCache = [];
+    private static array $staticCache = [];
 
     private function getOrSetStaticCache(string $key, callable $fn)
     {
-        if (!isset(static::$staticCache[$key])) {
-            static::$staticCache[$key] = $fn();
+        if (!isset(self::$staticCache[$key])) {
+            self::$staticCache[$key] = $fn();
         }
-        return static::$staticCache[$key];
+        return self::$staticCache[$key];
     }
 
     /**

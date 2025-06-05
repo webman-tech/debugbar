@@ -126,10 +126,12 @@ class LaravelRedisCollector extends LaravelQueryCollector
             }
         }
 
+        $formatter = $this->getDataFormatter();
+
         $this->queries[] = [
             'query' => $command,
             'type' => 'query',
-            'bindings' => $this->getDataFormatter()->escapeBindings($parameters),
+            'bindings' => $formatter instanceof QueryFormatter ? $formatter->escapeBindings($parameters) : [],
             'time' => $time,
             'source' => $source,
             'explain' => $explainResults,
