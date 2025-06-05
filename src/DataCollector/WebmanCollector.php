@@ -4,6 +4,7 @@ namespace WebmanTech\Debugbar\DataCollector;
 
 use DebugBar\DataCollector\DataCollector;
 use DebugBar\DataCollector\Renderable;
+use Workerman\Worker;
 
 class WebmanCollector extends DataCollector implements Renderable
 {
@@ -13,7 +14,7 @@ class WebmanCollector extends DataCollector implements Renderable
     public function collect()
     {
         return [
-            "version" => defined('WEBMAN_VERSION') ? WEBMAN_VERSION : 'Undefined',
+            "version" => 'Worker: ' . Worker::VERSION,
             "environment" => config('app.debug', false) ? 'debug' : 'prod',
         ];
     }

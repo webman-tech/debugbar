@@ -14,6 +14,9 @@ class RouteCollector extends DataCollector implements DataCollectorInterface, Re
     function collect()
     {
         $request = request();
+        if (!$request) {
+            return [];
+        }
         $data = [];
         if ($route = $request->route) {
             $data = [

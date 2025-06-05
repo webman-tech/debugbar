@@ -4,14 +4,19 @@ namespace WebmanTech\Debugbar;
 
 use Closure;
 use DebugBar\DataCollector\DataCollectorInterface;
-use DebugBar\DataCollector\ExceptionsCollector;
-use DebugBar\DataCollector\MessagesCollector;
 use DebugBar\DebugBar;
 use DebugBar\OpenHandler;
 use DebugBar\Storage\StorageInterface;
+use support\Container;
+use Throwable;
+use Webman\Http\Request;
+use Webman\Http\Response;
+use Webman\Route;
+use WebmanTech\Debugbar\DataCollector\ExceptionsCollector;
 use WebmanTech\Debugbar\DataCollector\LaravelQueryCollector;
 use WebmanTech\Debugbar\DataCollector\LaravelRedisCollector;
 use WebmanTech\Debugbar\DataCollector\MemoryCollector;
+use WebmanTech\Debugbar\DataCollector\MessagesCollector;
 use WebmanTech\Debugbar\DataCollector\PhpInfoCollector;
 use WebmanTech\Debugbar\DataCollector\RequestDataCollector;
 use WebmanTech\Debugbar\DataCollector\RouteCollector;
@@ -25,11 +30,6 @@ use WebmanTech\Debugbar\Helper\StringHelper;
 use WebmanTech\Debugbar\Storage\AutoCleanFileStorage;
 use WebmanTech\Debugbar\Storage\FileStorage;
 use WebmanTech\Debugbar\Traits\DebugBarOverwrite;
-use support\Container;
-use Throwable;
-use Webman\Http\Request;
-use Webman\Http\Response;
-use Webman\Route;
 
 class WebmanDebugBar extends DebugBar
 {

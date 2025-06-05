@@ -12,6 +12,7 @@ use WebmanTech\Debugbar\DebugBar;
 use WebmanTech\Debugbar\Helper\ArrayHelper;
 use WebmanTech\Debugbar\Laravel\DataCollector\QueryCollector;
 use WebmanTech\Debugbar\Laravel\DataFormatter\QueryFormatter;
+use WebmanTech\Debugbar\Middleware\DebugBarMiddleware;
 
 class LaravelQueryCollector extends QueryCollector
 {
@@ -44,6 +45,10 @@ class LaravelQueryCollector extends QueryCollector
         parent::__construct($timeCollector);
 
         $this->setConfig();
+
+        DebugBarMiddleware::bindEventWhenRequestStart(function () {
+            $this->reset();
+        });
     }
 
     /**

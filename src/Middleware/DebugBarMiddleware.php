@@ -2,10 +2,10 @@
 
 namespace WebmanTech\Debugbar\Middleware;
 
-use WebmanTech\Debugbar\DebugBar;
 use Webman\Http\Request;
 use Webman\Http\Response;
 use Webman\MiddlewareInterface;
+use WebmanTech\Debugbar\DebugBar;
 
 class DebugBarMiddleware implements MiddlewareInterface
 {
@@ -19,6 +19,10 @@ class DebugBarMiddleware implements MiddlewareInterface
             return $handler($request);
         }
 
+        foreach (self::$events['start'] as $cb) {
+            $cb($request);
+        }
+
         $debugBar->boot();
         $debugBar->startMeasure(static::class, 'Application');
 
@@ -27,6 +31,25 @@ class DebugBarMiddleware implements MiddlewareInterface
 
         $debugBar->stopMeasure(static::class);
 
+        foreach (self::$events['end'] as $cb) {
+            $cb($request, $response);
+        }
+
         return $debugBar->modifyResponse($request, $response);
+    }
+
+    private static array $events = [
+        'start' => [],
+        'end' => [],
+    ];
+
+    public static function bindEventWhenRequestStart(callable $cb): void
+    {
+        self::$events['start'][] = $cb;
+    }
+
+    public static function bindEventWhenRequestEnd(callable $cb): void
+    {
+        self::$events['end'][] = $cb;
     }
 }

@@ -3,9 +3,17 @@
 namespace WebmanTech\Debugbar\DataCollector;
 
 use DebugBar\DataCollector\MemoryCollector as OriginMemoryCollector;
+use WebmanTech\Debugbar\Middleware\DebugBarMiddleware;
 
 class MemoryCollector extends OriginMemoryCollector
 {
+    public function __construct()
+    {
+        DebugBarMiddleware::bindEventWhenRequestStart(function () {
+            $this->resetMemoryBaseline();
+        });
+    }
+
     /**
      * @inheritdoc
      */

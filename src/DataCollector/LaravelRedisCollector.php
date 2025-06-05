@@ -2,10 +2,12 @@
 
 namespace WebmanTech\Debugbar\DataCollector;
 
+use DebugBar\DataCollector\TimeDataCollector as DebugBarTimeDataCollector;
 use Illuminate\Redis\Connections\Connection;
 use Illuminate\Redis\Events\CommandExecuted;
 use Illuminate\Support\Str;
 use WebmanTech\Debugbar\Laravel\DataFormatter\QueryFormatter;
+use WebmanTech\Debugbar\Middleware\DebugBarMiddleware;
 
 class LaravelRedisCollector extends LaravelQueryCollector
 {
@@ -21,6 +23,15 @@ class LaravelRedisCollector extends LaravelQueryCollector
         'show_copy' => true, // 显示复制
         'slow_threshold' => false, // 仅显示慢执行，设置毫秒时间来启用
     ];
+
+    public function __construct(array $config = [], DebugBarTimeDataCollector $timeCollector = null)
+    {
+        parent::__construct($config, $timeCollector);
+
+        DebugBarMiddleware::bindEventWhenRequestStart(function () {
+            $this->reset();
+        });
+    }
 
     /**
      * @inheritDoc
