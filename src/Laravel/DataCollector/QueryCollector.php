@@ -128,7 +128,7 @@ class QueryCollector extends PDOCollector
     public function addQuery($query, $bindings, $time, $connection)
     {
         $explainResults = [];
-        $time = $time / 1000;
+        $time /= 1000;
         $endTime = microtime(true);
         $startTime = $endTime - $time;
         $hints = $this->performQueryAnalysis($query);
@@ -136,7 +136,7 @@ class QueryCollector extends PDOCollector
         $pdo = null;
         try {
             $pdo = $connection->getPdo();
-        } catch (\Exception $e) {
+        } catch (\Exception) {
             // ignore error for non-pdo laravel drivers
         }
         $bindings = $connection->prepareBindings($bindings);
@@ -163,7 +163,7 @@ class QueryCollector extends PDOCollector
                     if ($pdo) {
                         try {
                             $binding = $pdo->quote((string) $binding);
-                        } catch (\Exception $e) {
+                        } catch (\Exception) {
                             $binding = $this->emulateQuote($binding);
                         }
                     } else {
@@ -171,7 +171,7 @@ class QueryCollector extends PDOCollector
                     }
                 }
 
-                $query = preg_replace($regex, addcslashes($binding, '$'), $query, 1);
+                $query = preg_replace($regex, addcslashes($binding, '$'), (string) $query, 1);
             }
         }
 
@@ -180,7 +180,7 @@ class QueryCollector extends PDOCollector
         if ($this->findSource) {
             try {
                 $source = array_slice($this->findSource(), 0, 5);
-            } catch (\Exception $e) {
+            } catch (\Exception) {
             }
         }
 
@@ -241,7 +241,7 @@ class QueryCollector extends PDOCollector
                 You can <a href="http://stackoverflow.com/questions/2663710/how-does-mysqls-order-by-rand-work" target="_blank">read this</a>
                 or <a href="http://stackoverflow.com/questions/1244555/how-can-i-optimize-mysqls-order-by-rand-function" target="_blank">this</a>';
         }
-        if (strpos($query, '!=') !== false) {
+        if (str_contains($query, '!=')) {
             $hints[] = 'The <code>!=</code> operator is not standard. Use the <code>&lt;&gt;</code> operator to test for inequality instead.';
         }
         if (stripos($query, 'WHERE') === false && preg_match('/^(SELECT) /i', $query)) {
@@ -290,7 +290,7 @@ class QueryCollector extends PDOCollector
             'index' => $index,
             'namespace' => null,
             'name' => null,
-            'line' => isset($trace['line']) ? $trace['line'] : '?',
+            'line' => $trace['line'] ?? '?',
         ];
 
         if (isset($trace['function']) && $trace['function'] == 'substituteBindings') {
@@ -307,8 +307,8 @@ class QueryCollector extends PDOCollector
             $file = $trace['file'];
 
             if (isset($trace['object']) && is_a($trace['object'], 'Twig_Template')) {
-                list($file, $frame->line) = $this->getTwigInfo($trace);
-            } elseif (strpos($file, base_path() . '/storage') !== false) {
+                [$file, $frame->line] = $this->getTwigInfo($trace);
+            } elseif (str_contains($file, base_path() . '/storage')) {
                 $hash = pathinfo($file, PATHINFO_FILENAME);
 
                 if (! $frame->name = $this->findViewFromHash($hash)) {
@@ -318,7 +318,7 @@ class QueryCollector extends PDOCollector
                 $frame->namespace = 'view';
 
                 return $frame;
-            } elseif (strpos($file, 'Middleware') !== false) {
+            } elseif (str_contains($file, 'Middleware')) {
                 $frame->name = $this->findMiddlewareFromFile($file);
 
                 if ($frame->name) {
@@ -350,7 +350,7 @@ class QueryCollector extends PDOCollector
         $normalizedPath = str_replace('\\', '/', $file);
 
         foreach ($this->backtraceExcludePaths as $excludedPath) {
-            if (strpos($normalizedPath, $excludedPath) !== false) {
+            if (str_contains($normalizedPath, (string) $excludedPath)) {
                 return true;
             }
         }
@@ -369,7 +369,7 @@ class QueryCollector extends PDOCollector
         $filename = pathinfo($file, PATHINFO_FILENAME);
 
         foreach ($this->middleware as $alias => $class) {
-            if (strpos($class, $filename) !== false) {
+            if (str_contains((string) $class, $filename)) {
                 return $alias;
             }
         }
@@ -397,7 +397,7 @@ class QueryCollector extends PDOCollector
         }
 
         foreach ($property->getValue($finder) as $name => $path) {
-            if (sha1($path) == $hash || md5($path) == $hash) {
+            if (sha1((string) $path) == $hash || md5((string) $path) == $hash) {
                 return $name;
             }
         }
@@ -451,7 +451,7 @@ class QueryCollector extends PDOCollector
         if ($this->findSource) {
             try {
                 $source = $this->findSource();
-            } catch (\Exception $e) {
+            } catch (\Exception) {
             }
         }
 
@@ -505,9 +505,7 @@ class QueryCollector extends PDOCollector
 
             // Add the results from the explain as new rows
             if ($query['driver'] === 'pgsql') {
-                $explainer = trim(implode("\n", array_map(function ($explain) {
-                    return $explain->{'QUERY PLAN'};
-                }, $query['explain'])));
+                $explainer = trim(implode("\n", array_map(fn($explain) => $explain->{'QUERY PLAN'}, $query['explain'])));
 
                 if ($explainer) {
                     $statements[] = [
@@ -550,9 +548,7 @@ class QueryCollector extends PDOCollector
             }
         }
 
-        $nb_statements = array_filter($queries, function ($query) {
-            return $query['type'] === 'query';
-        });
+        $nb_statements = array_filter($queries, fn($query) => $query['type'] === 'query');
 
         $data = [
             'nb_statements' => count($nb_statements),

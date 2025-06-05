@@ -9,7 +9,7 @@ class MemoryCollector extends OriginMemoryCollector
 {
     public function __construct()
     {
-        DebugBarMiddleware::bindEventWhenRequestStart(function () {
+        DebugBarMiddleware::bindEventWhenRequestStart(function (): void {
             $this->resetMemoryBaseline();
         });
     }
@@ -19,13 +19,13 @@ class MemoryCollector extends OriginMemoryCollector
      */
     public function getWidgets()
     {
-        return array(
-            "memory" => array(
+        return [
+            "memory" => [
                 "icon" => "cogs",
                 "tooltip" => "内存使用: 仅表示本次启动后的最大内存",
                 "map" => "memory.peak_usage_str",
                 "default" => "'0B'"
-            )
-        );
+            ]
+        ];
     }
 }

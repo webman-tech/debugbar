@@ -127,7 +127,7 @@ class WebmanDebugBar extends DebugBar
                 if ($this->config['storage'] === true) {
                     $this->config['storage'] = function () {
                         $path = runtime_path() . '/debugbar';
-                        if (class_exists('Symfony\Component\Finder\Finder')) {
+                        if (class_exists(\Symfony\Component\Finder\Finder::class)) {
                             return new AutoCleanFileStorage($path);
                         }
                         // 使用该存储形式会导致文件数量极多
@@ -181,7 +181,7 @@ class WebmanDebugBar extends DebugBar
             'exceptions' => ExceptionsCollector::class,
             'route' => RouteCollector::class,
             'laravelDB' => function () {
-                if (class_exists('Illuminate\Database\Capsule\Manager')) {
+                if (class_exists(\Illuminate\Database\Capsule\Manager::class)) {
                     $timeDataCollector = null;
                     if ($this->hasCollector('time')) {
                         /** @var \DebugBar\DataCollector\TimeDataCollector $timeDataCollector */
@@ -192,7 +192,7 @@ class WebmanDebugBar extends DebugBar
                 return null;
             },
             'laravelRedis' => function () {
-                if (class_exists('Illuminate\Redis\RedisManager')) {
+                if (class_exists(\Illuminate\Redis\RedisManager::class)) {
                     $timeDataCollector = null;
                     if ($this->hasCollector('time')) {
                         /** @var \DebugBar\DataCollector\TimeDataCollector $timeDataCollector */
@@ -202,9 +202,7 @@ class WebmanDebugBar extends DebugBar
                 }
                 return null;
             },
-            'request' => function (Request $request, Response $response) {
-                return new RequestDataCollector($request, $response);
-            },
+            'request' => fn(Request $request, Response $response) => new RequestDataCollector($request, $response),
             'session' => function (Request $request) {
                 /* @phpstan-ignore-next-line */
                 if (request() && request()->session()) {
@@ -233,7 +231,7 @@ class WebmanDebugBar extends DebugBar
      */
     protected function buildCollector($collector, ...$params): ?DataCollectorInterface
     {
-        if (is_string($collector) && strpos($collector, '\\') !== false && class_exists($collector)) {
+        if (is_string($collector) && str_contains($collector, '\\') && class_exists($collector)) {
             $collector = new $collector;
         }
         if (is_callable($collector)) {
@@ -285,9 +283,7 @@ class WebmanDebugBar extends DebugBar
 
         // 示例的路由
         if ($this->config['sample_url']) {
-            Route::get($this->config['sample_url'], function () {
-                return response("<html lang='en'><body><h1>DebugBar Sample</h1></body></html>");
-            });
+            Route::get($this->config['sample_url'], fn() => response("<html lang='en'><body><h1>DebugBar Sample</h1></body></html>"));
         }
         // 历史记录的路由
         if ($this->config['open_handler_url']) {
@@ -392,7 +388,7 @@ class WebmanDebugBar extends DebugBar
         if (false !== $pos) {
             $content = substr($content, 0, $pos) . $foot . substr($content, $pos);
         } else {
-            $content = $content . $foot;
+            $content .= $foot;
         }
 
         $response->withBody($content);

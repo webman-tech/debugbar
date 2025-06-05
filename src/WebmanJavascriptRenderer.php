@@ -48,14 +48,14 @@ class WebmanJavascriptRenderer extends JavascriptRenderer
     {
         Route::get($this->getBaseUrl() . '/[{path:.+}]', function ($request, $path = '') {
             // 安全检查，避免url里 /../../../password 这样的非法访问
-            if (strpos($path, '..') !== false) {
+            if (str_contains($path, '..')) {
                 return response('<h1>400 Bad Request</h1>', 400);
             }
             // debugbar 的静态文件目录
             $staticBasePath = $this->getBasePath();
             // 其他文件
             foreach ($this->assetsInfo as $name => $item) {
-                if (strpos($path, $name . '/') === 0) {
+                if (str_starts_with($path, $name . '/')) {
                     $staticBasePath = $item['path'];
                     $path = substr($path, strlen($name) + 1);
                     break;

@@ -33,7 +33,7 @@ class ThinkPdoCollector extends PDOCollector
                      */
                     $multiConfig = [];
                     foreach (['username', 'password', 'hostname', 'hostport', 'database', 'dsn', 'charset'] as $name) {
-                        $dbConfig[$name] = $dbConfig[$name] ?? '';
+                        $dbConfig[$name] ??= '';
                         $multiConfig[$name] = is_string($dbConfig[$name]) ? explode(',', $dbConfig[$name]) : $dbConfig[$name];
                     }
                     $multiDBConfig = [];
@@ -76,17 +76,17 @@ class ThinkPdoCollector extends PDOCollector
     public function getWidgets()
     {
         $name = $this->getName();
-        return array(
-            $name => array(
+        return [
+            $name => [
                 "icon" => "database",
                 "widget" => "PhpDebugBar.Widgets.SQLQueriesWidget",
                 "map" => $name,
                 "default" => "[]"
-            ),
-            "{$name}:badge" => array(
+            ],
+            "{$name}:badge" => [
                 "map" => "{$name}.nb_statements",
                 "default" => 0
-            )
-        );
+            ]
+        ];
     }
 }

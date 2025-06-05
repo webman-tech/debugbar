@@ -58,12 +58,12 @@ class HttpExt
             if (is_array($header)) {
                 $header = implode(';', $header);
             }
-            $is = strpos($header, 'text/html') !== false;
+            $is = str_contains($header, 'text/html');
             if ($is) {
                 return true;
             }
         }
-        if (strpos($this->response->rawBody(), '<html') === 0 || strpos($this->response->rawBody(), '<body') !== false) {
+        if (str_starts_with($this->response->rawBody(), '<html') || str_contains($this->response->rawBody(), '<body')) {
             return true;
         }
         return false;

@@ -11,26 +11,24 @@ class FileStorage extends \DebugBar\Storage\FileStorage
     /**
      * {@inheritdoc}
      */
-    public function find(array $filters = array(), $max = 20, $offset = 0)
+    public function find(array $filters = [], $max = 20, $offset = 0)
     {
         //Loop through all .json files and remember the modified time and id.
-        $files = array();
+        $files = [];
         foreach (new \DirectoryIterator($this->dirname) as $file) {
             if ($file->getExtension() == 'json') {
-                $files[] = array(
+                $files[] = [
                     'time' => $file->getMTime(),
                     'id' => $file->getBasename('.json')
-                );
+                ];
             }
         }
 
         //Sort the files, newest first
-        usort($files, function ($a, $b) {
-            return $a['time'] < $b['time'] ? 1 : -1;
-        });
+        usort($files, fn($a, $b) => $a['time'] < $b['time'] ? 1 : -1);
 
         //Load the metadata and filter the results.
-        $results = array();
+        $results = [];
         $i = 0;
         foreach ($files as $file) {
             //When filter is empty, skip loading the offset

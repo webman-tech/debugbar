@@ -11,7 +11,7 @@ class TimeDataCollector extends OriginTimeDataCollector
     {
         parent::__construct($requestStartTime);
 
-        DebugBarMiddleware::bindEventWhenRequestStart(function () {
+        DebugBarMiddleware::bindEventWhenRequestStart(function (): void {
             $this->requestStartTime = microtime(true);
             $this->measures = [];
         });

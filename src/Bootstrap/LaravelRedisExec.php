@@ -37,7 +37,7 @@ class LaravelRedisExec implements Bootstrap
             try {
                 $connection = Redis::connection($connection);
                 $collector->addRedisListener($connection);
-            } catch (\Throwable $e) {
+            } catch (\Throwable) {
                 // 忽略错误的 redis connection
             }
         }

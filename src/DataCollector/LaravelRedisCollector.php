@@ -28,7 +28,7 @@ class LaravelRedisCollector extends LaravelQueryCollector
     {
         parent::__construct($config, $timeCollector);
 
-        DebugBarMiddleware::bindEventWhenRequestStart(function () {
+        DebugBarMiddleware::bindEventWhenRequestStart(function (): void {
             $this->reset();
         });
     }
@@ -81,7 +81,7 @@ class LaravelRedisCollector extends LaravelQueryCollector
 
     public function addRedisListener(Connection $connection): void
     {
-        $connection->listen(function (CommandExecuted $event) {
+        $connection->listen(function (CommandExecuted $event): void {
             $command = $event->command;
             $connection = $event->connection;
             $parameters = $event->parameters;
@@ -103,7 +103,7 @@ class LaravelRedisCollector extends LaravelQueryCollector
     protected function addExec(string $command, array $parameters, float $time, Connection $connection): void
     {
         $explainResults = [];
-        $time = $time / 1000;
+        $time /= 1000;
         $endTime = microtime(true);
         $startTime = $endTime - $time;
 
@@ -122,7 +122,7 @@ class LaravelRedisCollector extends LaravelQueryCollector
         if ($this->findSource) {
             try {
                 $source = array_slice($this->findSource(), 0, 5);
-            } catch (\Exception $e) {
+            } catch (\Exception) {
             }
         }
 
@@ -137,7 +137,7 @@ class LaravelRedisCollector extends LaravelQueryCollector
             'explain' => $explainResults,
             'connection' => $connection->getName(),
             /** @phpstan-ignore-next-line */
-            'driver' => get_class($connection->client()),
+            'driver' => $connection->client()::class,
             'hints' => null,
             'show_copy' => $this->showCopyButton,
         ];
