@@ -209,9 +209,9 @@ class LaravelQueryCollector extends QueryCollector
 
     /**
      * 获取 request 下每次新的当前 collector 对象
-     * @return $this|null
+     * @return static|null
      */
-    protected function getRequestThisCollector(): ?self
+    protected function getRequestThisCollector(): ?static
     {
         $debugBar = DebugBar::instance();
         if (!$debugBar->hasCollector($this->getName())) {
