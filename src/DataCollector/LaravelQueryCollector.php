@@ -89,7 +89,7 @@ class LaravelQueryCollector extends QueryCollector
         ];
     }
 
-    protected function setConfig()
+    protected function setConfig(): void
     {
         $this->mergeBacktraceExcludePaths([
             '/vendor/webman-tech/debugbar',
@@ -131,7 +131,7 @@ class LaravelQueryCollector extends QueryCollector
         }
     }
 
-    public function addQuery($query, $bindings, $time, $connection)
+    public function addQuery($query, $bindings, $time, $connection): void
     {
         parent::addQuery($query, $bindings, $time, $connection);
 
@@ -142,7 +142,7 @@ class LaravelQueryCollector extends QueryCollector
         $this->queries[$lastIndex] = $lastQuery;
     }
 
-    public function addListener(Connection $db)
+    public function addListener(Connection $db): void
     {
         $db->listen(function (QueryExecuted $event) use ($db) {
             $connection = $event->connection;

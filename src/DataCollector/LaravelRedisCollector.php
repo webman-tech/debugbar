@@ -41,7 +41,7 @@ class LaravelRedisCollector extends LaravelQueryCollector
         return 'laravelRedis';
     }
 
-    protected function setConfig()
+    protected function setConfig(): void
     {
         $this->mergeBacktraceExcludePaths([
             '/webman-debugbar/',
@@ -100,7 +100,7 @@ class LaravelRedisCollector extends LaravelQueryCollector
      * @param Connection $connection
      * @see addQuery
      */
-    protected function addExec(string $command, array $parameters, float $time, Connection $connection)
+    protected function addExec(string $command, array $parameters, float $time, Connection $connection): void
     {
         $explainResults = [];
         $time = $time / 1000;

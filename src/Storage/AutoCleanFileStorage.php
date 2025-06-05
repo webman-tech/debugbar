@@ -30,13 +30,13 @@ class AutoCleanFileStorage extends FileStorage
     /**
      * @inheritDoc
      */
-    public function save($id, $data)
+    public function save($id, $data): void
     {
         $this->autoClean();
         parent::save($id, $data);
     }
 
-    private function autoClean()
+    private function autoClean(): void
     {
         if (!is_dir($this->dirname)) {
             return;
@@ -51,7 +51,7 @@ class AutoCleanFileStorage extends FileStorage
         }
     }
 
-    private function cleanByDirMaxSize(int $filesCountMax, int $filesCountKeep)
+    private function cleanByDirMaxSize(int $filesCountMax, int $filesCountKeep): void
     {
         $finder = Finder::create()->files()->name('*.json')->in($this->dirname);
         if (($totalCount = $finder->count()) > $filesCountMax) {
@@ -65,7 +65,7 @@ class AutoCleanFileStorage extends FileStorage
         }
     }
 
-    private function cleanByKeepHours(int $hoursKeep)
+    private function cleanByKeepHours(int $hoursKeep): void
     {
         foreach (Finder::create()->files()->name('*.json')->date('< ' . $hoursKeep . ' hour ago')->in(
             $this->dirname

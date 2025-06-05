@@ -98,6 +98,9 @@ class WebmanDebugBar extends DebugBar
 
     private static array $staticCache = [];
 
+    /**
+     * @return mixed
+     */
     private function getOrSetStaticCache(string $key, callable $fn)
     {
         if (!isset(self::$staticCache[$key])) {
@@ -396,7 +399,7 @@ class WebmanDebugBar extends DebugBar
     /**
      * @param Throwable $e
      */
-    public function addThrowable(Throwable $e)
+    public function addThrowable(Throwable $e): void
     {
         if ($this->hasCollector('exceptions')) {
             /** @var ExceptionsCollector $collector */
@@ -406,10 +409,10 @@ class WebmanDebugBar extends DebugBar
     }
 
     /**
-     * @param $message
+     * @param mixed $message
      * @param string $type
      */
-    public function addMessage($message, string $type = 'info')
+    public function addMessage($message, string $type = 'info'): void
     {
         if ($this->hasCollector('messages')) {
             /** @var MessagesCollector $collector */
@@ -418,11 +421,7 @@ class WebmanDebugBar extends DebugBar
         }
     }
 
-    /**
-     * @param string $name
-     * @param string|null $label
-     */
-    public function startMeasure(string $name, string $label = null)
+    public function startMeasure(string $name, ?string $label = null): void
     {
         if ($this->hasCollector('time')) {
             /** @var \DebugBar\DataCollector\TimeDataCollector $collector */
@@ -431,10 +430,7 @@ class WebmanDebugBar extends DebugBar
         }
     }
 
-    /**
-     * @param string $name
-     */
-    public function stopMeasure(string $name)
+    public function stopMeasure(string $name): void
     {
         if ($this->hasCollector('time')) {
             /** @var \DebugBar\DataCollector\TimeDataCollector $collector */
@@ -447,12 +443,7 @@ class WebmanDebugBar extends DebugBar
         }
     }
 
-    /**
-     * @param string $label
-     * @param float $start
-     * @param float $end
-     */
-    public function addMeasure(string $label, float $start, float $end)
+    public function addMeasure(string $label, float $start, float $end): void
     {
         if ($this->hasCollector('time')) {
             /** @var \DebugBar\DataCollector\TimeDataCollector $collector */
@@ -462,8 +453,6 @@ class WebmanDebugBar extends DebugBar
     }
 
     /**
-     * @param string $label
-     * @param Closure $closure
      * @return mixed
      */
     public function measure(string $label, Closure $closure)

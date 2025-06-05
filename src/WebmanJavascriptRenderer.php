@@ -8,10 +8,6 @@ use Webman\Route;
 
 class WebmanJavascriptRenderer extends JavascriptRenderer
 {
-    protected $ajaxHandlerBindToJquery = true;
-    protected $ajaxHandlerBindToXHR = true;
-    protected $ajaxHandlerBindToFetch = true;
-
     /**
      * @var array
      */
@@ -35,6 +31,10 @@ class WebmanJavascriptRenderer extends JavascriptRenderer
     public function __construct(DebugBar $debugBar, $baseUrl = null, $basePath = null)
     {
         parent::__construct($debugBar, $baseUrl, $basePath);
+
+        $this->ajaxHandlerBindToJquery = true;
+        $this->ajaxHandlerBindToXHR = true;
+        $this->ajaxHandlerBindToFetch = true;
 
         foreach ($this->assetsInfo as $name => $item) {
             $this->addAssets($item['css'], $item['js'], $item['path'], $baseUrl . '/' . $name);

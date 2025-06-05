@@ -8,25 +8,14 @@ use Webman\Http\Response;
 
 class WebmanHttpDriver implements HttpDriverInterface
 {
-    /**
-     * @var Request
-     */
-    protected $request;
-    /**
-     * @var Response
-     */
-    protected $response;
-
-    public function __construct(Request $request, Response $response)
+    public function __construct(protected Request $request, protected Response $response)
     {
-        $this->request = $request;
-        $this->response = $response;
     }
 
     /**
      * @inheritDoc
      */
-    function setHeaders(array $headers)
+    function setHeaders(array $headers): void
     {
         foreach ($headers as $key => $value) {
             $this->response->header($key, $value);
@@ -36,7 +25,7 @@ class WebmanHttpDriver implements HttpDriverInterface
     /**
      * @inheritDoc
      */
-    function isSessionStarted()
+    function isSessionStarted(): bool
     {
         return !!($this->request->context['session'] ?? null);
     }
@@ -44,7 +33,7 @@ class WebmanHttpDriver implements HttpDriverInterface
     /**
      * @inheritDoc
      */
-    function setSessionValue($name, $value)
+    function setSessionValue($name, $value): void
     {
         $this->request->session()->set($name, $value);
     }
@@ -52,7 +41,7 @@ class WebmanHttpDriver implements HttpDriverInterface
     /**
      * @inheritDoc
      */
-    function hasSessionValue($name)
+    function hasSessionValue($name): bool
     {
         return $this->request->session()->has($name);
     }
@@ -68,7 +57,7 @@ class WebmanHttpDriver implements HttpDriverInterface
     /**
      * @inheritDoc
      */
-    function deleteSessionValue($name)
+    function deleteSessionValue($name): void
     {
         $this->request->session()->delete($name);
     }
