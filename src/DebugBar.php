@@ -4,6 +4,7 @@ namespace WebmanTech\Debugbar;
 
 use Closure;
 use Throwable;
+use WebmanTech\Debugbar\Helper\ConfigHelper;
 
 /**
  * @method static void addThrowable(Throwable $e)
@@ -42,7 +43,7 @@ class DebugBar
 
     protected static function createDebugBar(): WebmanDebugBar
     {
-        $config = config('plugin.webman-tech.debugbar.app.debugbar', []);
+        $config = ConfigHelper::get('app.debugbar', []);
         return new WebmanDebugBar($config);
     }
 
