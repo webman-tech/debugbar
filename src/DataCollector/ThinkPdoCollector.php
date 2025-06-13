@@ -10,7 +10,7 @@ use WebmanTech\Debugbar\DataCollector\PDO\TraceablePDO;
 
 class ThinkPdoCollector extends PDOCollector
 {
-    public function __construct(array $thinkOrmConfig = [], TimeDataCollector $timeCollector = null)
+    public function __construct(array $thinkOrmConfig = [], ?TimeDataCollector $timeCollector = null)
     {
         $config = array_merge([
             'default' => '',

@@ -33,9 +33,9 @@ class QueryCollector extends PDOCollector
     ];
 
     /**
-     * @param TimeDataCollector $timeCollector
+     * @param TimeDataCollector|null $timeCollector
      */
-    public function __construct(TimeDataCollector $timeCollector = null)
+    public function __construct(?TimeDataCollector $timeCollector = null)
     {
         $this->timeCollector = $timeCollector;
     }
@@ -79,7 +79,7 @@ class QueryCollector extends PDOCollector
      */
     public function setFindSource($value, array $middleware)
     {
-        $this->findSource = (bool) $value;
+        $this->findSource = (bool)$value;
         $this->middleware = $middleware;
     }
 
@@ -96,7 +96,7 @@ class QueryCollector extends PDOCollector
     /**
      * Enable/disable the shaded duration background on queries
      *
-     * @param  bool $enabled
+     * @param bool $enabled
      */
     public function setDurationBackground($enabled)
     {
@@ -106,8 +106,8 @@ class QueryCollector extends PDOCollector
     /**
      * Enable/disable the EXPLAIN queries
      *
-     * @param  bool $enabled
-     * @param  array|null $types Array of types to explain queries (select/insert/update/delete)
+     * @param bool $enabled
+     * @param array|null $types Array of types to explain queries (select/insert/update/delete)
      */
     public function setExplainSource($enabled, $types)
     {
@@ -162,7 +162,7 @@ class QueryCollector extends PDOCollector
                 if (!is_int($binding) && !is_float($binding)) {
                     if ($pdo) {
                         try {
-                            $binding = $pdo->quote((string) $binding);
+                            $binding = $pdo->quote((string)$binding);
                         } catch (\Exception) {
                             $binding = $this->emulateQuote($binding);
                         }
@@ -171,7 +171,7 @@ class QueryCollector extends PDOCollector
                     }
                 }
 
-                $query = preg_replace($regex, addcslashes($binding, '$'), (string) $query, 1);
+                $query = preg_replace($regex, addcslashes($binding, '$'), (string)$query, 1);
             }
         }
 
@@ -210,10 +210,10 @@ class QueryCollector extends PDOCollector
      */
     protected function emulateQuote($value)
     {
-        $search = ["\\",  "\x00", "\n",  "\r",  "'",  '"', "\x1a"];
-        $replace = ["\\\\","\\0","\\n", "\\r", "\'", '\"', "\\Z"];
+        $search = ["\\", "\x00", "\n", "\r", "'", '"', "\x1a"];
+        $replace = ["\\\\", "\\0", "\\n", "\\r", "\'", '\"', "\\Z"];
 
-        return "'" . str_replace($search, $replace, (string) $value) . "'";
+        return "'" . str_replace($search, $replace, (string)$value) . "'";
     }
 
     /**
@@ -280,13 +280,13 @@ class QueryCollector extends PDOCollector
     /**
      * Parse a trace element from the backtrace stack.
      *
-     * @param  int    $index
-     * @param  array  $trace
+     * @param int $index
+     * @param array $trace
      * @return object|bool
      */
     protected function parseTrace($index, array $trace)
     {
-        $frame = (object) [
+        $frame = (object)[
             'index' => $index,
             'namespace' => null,
             'name' => null,
@@ -311,7 +311,7 @@ class QueryCollector extends PDOCollector
             } elseif (str_contains($file, base_path() . '/storage')) {
                 $hash = pathinfo($file, PATHINFO_FILENAME);
 
-                if (! $frame->name = $this->findViewFromHash($hash)) {
+                if (!$frame->name = $this->findViewFromHash($hash)) {
                     $frame->name = $hash;
                 }
 
@@ -350,7 +350,7 @@ class QueryCollector extends PDOCollector
         $normalizedPath = str_replace('\\', '/', $file);
 
         foreach ($this->backtraceExcludePaths as $excludedPath) {
-            if (str_contains($normalizedPath, (string) $excludedPath)) {
+            if (str_contains($normalizedPath, (string)$excludedPath)) {
                 return true;
             }
         }
@@ -361,7 +361,7 @@ class QueryCollector extends PDOCollector
     /**
      * Find the middleware alias from the file.
      *
-     * @param  string $file
+     * @param string $file
      * @return string|null
      */
     protected function findMiddlewareFromFile($file)
@@ -369,7 +369,7 @@ class QueryCollector extends PDOCollector
         $filename = pathinfo($file, PATHINFO_FILENAME);
 
         foreach ($this->middleware as $alias => $class) {
-            if (str_contains((string) $class, $filename)) {
+            if (str_contains((string)$class, $filename)) {
                 return $alias;
             }
         }
@@ -378,7 +378,7 @@ class QueryCollector extends PDOCollector
     /**
      * Find the template name from the hash.
      *
-     * @param  string $hash
+     * @param string $hash
      * @return null|string
      */
     protected function findViewFromHash($hash)
@@ -397,7 +397,7 @@ class QueryCollector extends PDOCollector
         }
 
         foreach ($property->getValue($finder) as $name => $path) {
-            if (sha1((string) $path) == $hash || md5((string) $path) == $hash) {
+            if (sha1((string)$path) == $hash || md5((string)$path) == $hash) {
                 return $name;
             }
         }
@@ -440,7 +440,7 @@ class QueryCollector extends PDOCollector
 
     /**
      * Collect a database transaction event.
-     * @param  string $event
+     * @param string $event
      * @param \Illuminate\Database\Connection $connection
      * @return array
      */

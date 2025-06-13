@@ -34,7 +34,7 @@ class LaravelQueryCollector extends QueryCollector
         'slow_threshold' => false, // 仅显示慢sql，设置毫秒时间来启用
     ];
 
-    public function __construct(array $config = [], DebugBarTimeDataCollector $timeCollector = null)
+    public function __construct(array $config = [], ?DebugBarTimeDataCollector $timeCollector = null)
     {
         $this->config = ArrayHelper::merge($this->config, $config);
 

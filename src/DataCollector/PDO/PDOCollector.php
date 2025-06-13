@@ -10,7 +10,7 @@ class PDOCollector extends \DebugBar\DataCollector\PDO\PDOCollector
     /**
      * @inheritDoc
      */
-    protected function collectPDO(DebugbarTraceablePDO $pdo, TimeDataCollector $timeCollector = null, $connectionName = null)
+    protected function collectPDO(DebugbarTraceablePDO $pdo, ?TimeDataCollector $timeCollector = null, $connectionName = null)
     {
         $data = parent::collectPDO($pdo, $timeCollector, $connectionName);
 
