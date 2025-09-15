@@ -109,9 +109,7 @@ class LaravelRedisCollector extends LaravelQueryCollector
 
         if (!empty($parameters) && $this->renderSqlWithParams) {
             foreach ($parameters as &$item) {
-                if (is_array($item)) {
-                    $item = implode('\', \'', $item);
-                }
+                $item = is_array($item) ? (json_encode($item) ?: '_JSON_') : $item;
             }
             unset($item);
             $command .= '(' . implode(', ', $parameters) . ')';
