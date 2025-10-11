@@ -331,13 +331,14 @@ class WebmanDebugBar extends DebugBar
         }
         // 启用 session 支持
         if ($this->config['http_driver']) {
-            if ($this->config['http_driver'] === true) {
-                $this->config['http_driver'] = new WebmanHttpDriver($request, $response);
+            $httpDriver = $this->config['http_driver'];
+            if ($httpDriver === true) {
+                $httpDriver = new WebmanHttpDriver($request, $response);
             }
-            if (is_callable($this->config['http_driver'])) {
-                $this->config['http_driver'] = call_user_func($this->config['http_driver']);
+            if (is_callable($httpDriver)) {
+                $httpDriver = call_user_func($httpDriver, $request, $response);
             }
-            $this->setHttpDriver($this->config['http_driver']);
+            $this->setHttpDriver($httpDriver);
         }
         // 添加 collectors
         $collectorMaps = $this->collectorMaps();
@@ -362,6 +363,10 @@ class WebmanDebugBar extends DebugBar
         } elseif ($httpExt->isHtmlAccepted()) {
             $response = $this->attachDebugBarToHtmlResponse($response);
         }
+
+        // 释放可能会持久化的资源，否则在 webman 下会持续引用 session，导致无法释放 session
+        $this->httpDriver = null;
+        $this->collectors = [];
 
         return $response;
     }
