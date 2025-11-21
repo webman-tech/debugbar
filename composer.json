@@ -13,6 +13,7 @@
   },
   "require": {
     "php": "^8.2",
+    "webman-tech/common-utils": "^1.0 || dev-main",
     "php-debugbar/php-debugbar": "^2.0"
   }
 }

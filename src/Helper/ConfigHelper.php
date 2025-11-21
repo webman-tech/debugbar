@@ -2,6 +2,8 @@
 
 namespace WebmanTech\Debugbar\Helper;
 
+use function WebmanTech\CommonUtils\config;
+
 /**
  * @internal
  */
