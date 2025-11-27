@@ -355,7 +355,7 @@ class WebmanDebugBar extends DebugBar
         }
         // 处理 response
         /** @var HttpExt $httpExt */
-        $httpExt = Container::make(HttpExt::class, ['request' => $request, 'response' => $response]);
+        $httpExt = Container::getCurrent()->make(HttpExt::class, ['request' => $request, 'response' => $response]);
         if ($httpExt->isRedirection()) {
             $this->stackData();
         } elseif (!$httpExt->isHtmlResponse()) {
