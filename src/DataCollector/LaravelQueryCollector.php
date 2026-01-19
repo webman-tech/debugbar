@@ -144,7 +144,12 @@ class LaravelQueryCollector extends QueryCollector
 
     public function addListener(Connection $db): void
     {
-        $db->listen(function (QueryExecuted $event) use ($db): void {
+        $event = $db->getEventDispatcher();
+        if ($event === null) {
+            return;
+        }
+
+        $event->listen(function (QueryExecuted $event) use ($db): void {
             $connection = $event->connection;
             if (!$this->isEventConnectionEqual($db, $connection)) {
                 return;
@@ -161,7 +166,7 @@ class LaravelQueryCollector extends QueryCollector
             }
         });
 
-        $db->getEventDispatcher()->listen(TransactionBeginning::class, function (TransactionBeginning $transaction) use ($db): void {
+        $event->listen(TransactionBeginning::class, function (TransactionBeginning $transaction) use ($db): void {
             if (!$this->isEventConnectionEqual($db, $transaction->connection)) {
                 return;
             }
@@ -170,7 +175,7 @@ class LaravelQueryCollector extends QueryCollector
             }
         });
 
-        $db->getEventDispatcher()->listen(TransactionCommitted::class, function (TransactionCommitted $transaction) use ($db): void {
+        $event->listen(TransactionCommitted::class, function (TransactionCommitted $transaction) use ($db): void {
             if (!$this->isEventConnectionEqual($db, $transaction->connection)) {
                 return;
             }
@@ -179,7 +184,7 @@ class LaravelQueryCollector extends QueryCollector
             }
         });
 
-        $db->getEventDispatcher()->listen(TransactionRolledBack::class, function (TransactionRolledBack $transaction) use ($db): void {
+        $event->listen(TransactionRolledBack::class, function (TransactionRolledBack $transaction) use ($db): void {
             if (!$this->isEventConnectionEqual($db, $transaction->connection)) {
                 return;
             }
@@ -188,19 +193,19 @@ class LaravelQueryCollector extends QueryCollector
             }
         });
 
-        $db->getEventDispatcher()->listen('connection.*.beganTransaction', function ($event, $params): void {
+        $event->listen('connection.*.beganTransaction', function ($event, $params): void {
             if ($collector = $this->getRequestThisCollector()) {
                 $collector->collectTransactionEvent('Begin Transaction', $params[0]);
             }
         });
 
-        $db->getEventDispatcher()->listen('connection.*.committed', function ($event, $params): void {
+        $event->listen('connection.*.committed', function ($event, $params): void {
             if ($collector = $this->getRequestThisCollector()) {
                 $collector->collectTransactionEvent('Commit Transaction', $params[0]);
             }
         });
 
-        $db->getEventDispatcher()->listen('connection.*.rollingBack', function ($event, $params): void {
+        $event->listen('connection.*.rollingBack', function ($event, $params): void {
             if ($collector = $this->getRequestThisCollector()) {
                 $collector->collectTransactionEvent('Rollback Transaction', $params[0]);
             }
