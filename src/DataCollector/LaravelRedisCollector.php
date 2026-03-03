@@ -28,9 +28,7 @@ class LaravelRedisCollector extends LaravelQueryCollector
     {
         parent::__construct($config, $timeCollector);
 
-        DebugBarMiddleware::bindEventWhenRequestStart(function (): void {
-            $this->reset();
-        });
+        // WeakMap 以 $this 为 key，父类构造函数已绑定当前实例的 reset 事件，此处无需重复绑定
     }
 
     /**

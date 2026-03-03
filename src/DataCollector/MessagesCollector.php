@@ -11,7 +11,7 @@ class MessagesCollector extends OriginPhpInfoCollector
     {
         parent::__construct($name);
 
-        DebugBarMiddleware::bindEventWhenRequestStart(function (): void {
+        DebugBarMiddleware::bindEventWhenRequestEnd($this, function (): void {
             $this->clear();
         });
     }

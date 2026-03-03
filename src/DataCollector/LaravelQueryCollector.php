@@ -46,7 +46,7 @@ class LaravelQueryCollector extends QueryCollector
 
         $this->setConfig();
 
-        DebugBarMiddleware::bindEventWhenRequestStart(function (): void {
+        DebugBarMiddleware::bindEventWhenRequestEnd($this, function (): void {
             $this->reset();
         });
     }

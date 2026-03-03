@@ -9,7 +9,7 @@ class MemoryCollector extends OriginMemoryCollector
 {
     public function __construct()
     {
-        DebugBarMiddleware::bindEventWhenRequestStart(function (): void {
+        DebugBarMiddleware::bindEventWhenRequestStart($this, function (): void {
             $this->resetMemoryBaseline();
         });
     }

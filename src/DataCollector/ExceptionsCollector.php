@@ -9,7 +9,7 @@ class ExceptionsCollector extends OriginPhpInfoCollector
 {
     public function __construct()
     {
-        DebugBarMiddleware::bindEventWhenRequestStart(function (): void {
+        DebugBarMiddleware::bindEventWhenRequestEnd($this, function (): void {
             $this->exceptions = [];
         });
     }

@@ -2,6 +2,7 @@
 
 namespace WebmanTech\Debugbar\Middleware;
 
+use WeakMap;
 use Webman\Http\Request;
 use Webman\Http\Response;
 use Webman\MiddlewareInterface;
@@ -10,16 +11,27 @@ use WebmanTech\Debugbar\DebugBar;
 class DebugBarMiddleware implements MiddlewareInterface
 {
     /**
+     * @var WeakMap<object, callable>
+     */
+    private static WeakMap $eventsStart;
+    /**
+     * @var WeakMap<object, callable>
+     */
+    private static WeakMap $eventsEnd;
+
+    /**
      * @inheritDoc
      */
     public function process(Request $request, callable $handler): Response
     {
+        self::initEvents();
+
         $debugBar = DebugBar::instance();
         if ($debugBar->isSkipRequest($request)) {
             return $handler($request);
         }
 
-        foreach (self::$events['start'] as $cb) {
+        foreach (self::$eventsStart as $cb) {
             $cb($request);
         }
 
@@ -31,25 +43,34 @@ class DebugBarMiddleware implements MiddlewareInterface
 
         $debugBar->stopMeasure(static::class);
 
-        foreach (self::$events['end'] as $cb) {
+        $response = $debugBar->modifyResponse($request, $response);
+
+        foreach (self::$eventsEnd as $cb) {
             $cb($request, $response);
         }
 
-        return $debugBar->modifyResponse($request, $response);
+        return $response;
     }
 
-    private static array $events = [
-        'start' => [],
-        'end' => [],
-    ];
-
-    public static function bindEventWhenRequestStart(callable $cb): void
+    private static function initEvents(): void
     {
-        self::$events['start'][] = $cb;
+        if (!isset(self::$eventsStart)) {
+            self::$eventsStart = new WeakMap();
+        }
+        if (!isset(self::$eventsEnd)) {
+            self::$eventsEnd = new WeakMap();
+        }
     }
 
-    public static function bindEventWhenRequestEnd(callable $cb): void
+    public static function bindEventWhenRequestStart(object $collector, callable $cb): void
     {
-        self::$events['end'][] = $cb;
+        self::initEvents();
+        self::$eventsStart[$collector] = $cb;
+    }
+
+    public static function bindEventWhenRequestEnd(object $collector, callable $cb): void
+    {
+        self::initEvents();
+        self::$eventsEnd[$collector] = $cb;
     }
 }
