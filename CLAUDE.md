@@ -27,7 +27,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - `copy/`：配置文件模板
 - `src/Install.php`：Webman 安装脚本
 
-测试文件位于项目根目录的 `tests/Unit/Debugbar/`。
+测试文件位于项目根目录的 `tests/Unit/Debugbar/`。测试环境配置和 Helper 函数详见根目录 [CLAUDE.md](../../CLAUDE.md) 的测试相关章节。
 
 ## 代码风格
 
@@ -39,4 +39,3 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 2. **性能影响**：debug 模式下会收集大量数据，有一定性能开销
 3. **API 调试**：API 请求在 debugbar 历史记录中查看
 4. **路由冲突**：确保 /debugbar 路由不被占用
-5. **测试位置**：单元测试在项目根目录的 `tests/Unit/Debugbar/` 下，而非包内
