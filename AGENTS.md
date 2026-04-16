@@ -27,6 +27,22 @@
 
 测试文件位于项目根目录的 `tests/Unit/Debugbar/`。测试环境配置和 Helper 函数详见根目录 [AGENTS.md](../../AGENTS.md) 的测试相关章节。
 
+## 工作流程
+
+```
+HTTP 请求
+    │
+    ▼
+DebugBarMiddleware
+    │
+    ├── DataCollector[] 收集数据
+    │   (Request / Route / Session / Time / SQL / Redis...)
+    │
+    ├── HTML 页面 ──→ 注入 JS/CSS ──→ 浏览器展示工具栏
+    │
+    └── API 请求 ──→ 写入 Storage ──→ /debugbar 历史记录查看
+```
+
 ## 代码风格
 
 与根项目保持一致，详见根目录 [AGENTS.md](../../AGENTS.md)。
