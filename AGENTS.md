@@ -12,14 +12,16 @@
 
 测试、静态分析等通用命令与根项目一致，详见根目录 [AGENTS.md](../../AGENTS.md)。
 
-## 项目架构
-
-### 核心组件
-- **DebugBar**：主入口类
-- **DataCollector**：各种数据收集器
-
-### 目录结构
-- `src/`：源代码
+## 目录结构
+- `src/`：
+  - `WebmanDebugBar.php`：Webman 适配入口
+  - `DebugBar.php`：核心 DebugBar 类
+  - `DataCollector/`：各类数据收集器（Request/Route/Session/Time/Memory/SQL/Redis 等）
+  - `Bootstrap/`：启动钩子（Laravel Query/Redis 监听）
+  - `Middleware/`：DebugBarMiddleware
+  - `Storage/`：FileStorage/AutoCleanFileStorage
+  - `Laravel/`：Laravel 兼容层
+  - `Traits/`：DebugBarOverwrite
 - `copy/`：配置文件模板
 - `src/Install.php`：Webman 安装脚本
 
