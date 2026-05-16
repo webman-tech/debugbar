@@ -3,6 +3,7 @@
 namespace WebmanTech\Debugbar\DataCollector;
 
 use DebugBar\DataCollector\TimeDataCollector as DebugBarTimeDataCollector;
+use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Database\Connection;
 use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Database\Events\TransactionBeginning;
@@ -149,67 +150,89 @@ class LaravelQueryCollector extends QueryCollector
             return;
         }
 
-        $event->listen(function (QueryExecuted $event) use ($db): void {
-            $connection = $event->connection;
-            if (!$this->isEventConnectionEqual($db, $connection)) {
-                return;
-            }
-            $bindings = $event->bindings;
-            $time = $event->time;
-            $query = $event->sql;
+        $this->addEventListeners($event, $db);
+    }
 
-            $threshold = $this->config['slow_threshold'];
-            if (!$threshold || $time > $threshold) {
-                if ($collector = $this->getRequestThisCollector()) {
-                    $collector->addQuery($query, $bindings, $time, $connection);
-                }
-            }
+    public function addEventDispatcherListener(Dispatcher $event): void
+    {
+        $this->addEventListeners($event);
+    }
+
+    private function addEventListeners(Dispatcher $event, ?Connection $connection = null): void
+    {
+        $event->listen(function (QueryExecuted $event) use ($connection): void {
+            $this->collectQueryEvent($event, $connection);
         });
 
-        $event->listen(TransactionBeginning::class, function (TransactionBeginning $transaction) use ($db): void {
-            if (!$this->isEventConnectionEqual($db, $transaction->connection)) {
-                return;
-            }
-            if ($collector = $this->getRequestThisCollector()) {
-                $collector->collectTransactionEvent('Begin Transaction', $transaction->connection);
-            }
+        $event->listen(TransactionBeginning::class, function (TransactionBeginning $transaction) use ($connection): void {
+            $this->collectTransactionConnectionEvent('Begin Transaction', $transaction->connection, $connection);
         });
 
-        $event->listen(TransactionCommitted::class, function (TransactionCommitted $transaction) use ($db): void {
-            if (!$this->isEventConnectionEqual($db, $transaction->connection)) {
-                return;
-            }
-            if ($collector = $this->getRequestThisCollector()) {
-                $collector->collectTransactionEvent('Commit Transaction', $transaction->connection);
-            }
+        $event->listen(TransactionCommitted::class, function (TransactionCommitted $transaction) use ($connection): void {
+            $this->collectTransactionConnectionEvent('Commit Transaction', $transaction->connection, $connection);
         });
 
-        $event->listen(TransactionRolledBack::class, function (TransactionRolledBack $transaction) use ($db): void {
-            if (!$this->isEventConnectionEqual($db, $transaction->connection)) {
-                return;
-            }
-            if ($collector = $this->getRequestThisCollector()) {
-                $collector->collectTransactionEvent('Rollback Transaction', $transaction->connection);
-            }
+        $event->listen(TransactionRolledBack::class, function (TransactionRolledBack $transaction) use ($connection): void {
+            $this->collectTransactionConnectionEvent('Rollback Transaction', $transaction->connection, $connection);
         });
 
-        $event->listen('connection.*.beganTransaction', function ($event, $params): void {
-            if ($collector = $this->getRequestThisCollector()) {
-                $collector->collectTransactionEvent('Begin Transaction', $params[0]);
-            }
+        $event->listen('connection.*.beganTransaction', function ($event, $params) use ($connection): void {
+            $this->collectWildcardTransactionEvent('Begin Transaction', $params, $connection);
         });
 
-        $event->listen('connection.*.committed', function ($event, $params): void {
-            if ($collector = $this->getRequestThisCollector()) {
-                $collector->collectTransactionEvent('Commit Transaction', $params[0]);
-            }
+        $event->listen('connection.*.committed', function ($event, $params) use ($connection): void {
+            $this->collectWildcardTransactionEvent('Commit Transaction', $params, $connection);
         });
 
-        $event->listen('connection.*.rollingBack', function ($event, $params): void {
-            if ($collector = $this->getRequestThisCollector()) {
-                $collector->collectTransactionEvent('Rollback Transaction', $params[0]);
-            }
+        $event->listen('connection.*.rollingBack', function ($event, $params) use ($connection): void {
+            $this->collectWildcardTransactionEvent('Rollback Transaction', $params, $connection);
         });
+    }
+
+    private function collectQueryEvent(QueryExecuted $event, ?Connection $expectedConnection = null): void
+    {
+        if (!$this->shouldCollectConnection($event->connection, $expectedConnection)) {
+            return;
+        }
+
+        $threshold = $this->config['slow_threshold'];
+        if ($threshold && $event->time <= $threshold) {
+            return;
+        }
+
+        if ($collector = $this->getRequestThisCollector()) {
+            $collector->addQuery($event->sql, $event->bindings, $event->time, $event->connection);
+        }
+    }
+
+    private function collectTransactionConnectionEvent(
+        string $label,
+        Connection $eventConnection,
+        ?Connection $expectedConnection = null,
+    ): void {
+        if (!$this->shouldCollectConnection($eventConnection, $expectedConnection)) {
+            return;
+        }
+
+        if ($collector = $this->getRequestThisCollector()) {
+            $collector->collectTransactionEvent($label, $eventConnection);
+        }
+    }
+
+    /**
+     * @param array<mixed> $params
+     */
+    private function collectWildcardTransactionEvent(
+        string $label,
+        array $params,
+        ?Connection $expectedConnection = null,
+    ): void {
+        $eventConnection = $params[0] ?? null;
+        if (!$eventConnection instanceof Connection) {
+            return;
+        }
+
+        $this->collectTransactionConnectionEvent($label, $eventConnection, $expectedConnection);
     }
 
     /**
@@ -237,5 +260,14 @@ class LaravelQueryCollector extends QueryCollector
     protected function isEventConnectionEqual(Connection $connection, Connection $eventConnection): bool
     {
         return $connection->getName() === $eventConnection->getName();
+    }
+
+    private function shouldCollectConnection(Connection $eventConnection, ?Connection $expectedConnection = null): bool
+    {
+        if ($expectedConnection === null) {
+            return true;
+        }
+
+        return $this->isEventConnectionEqual($expectedConnection, $eventConnection);
     }
 }

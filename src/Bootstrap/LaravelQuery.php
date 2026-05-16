@@ -3,29 +3,26 @@
 namespace WebmanTech\Debugbar\Bootstrap;
 
 use Illuminate\Database\Capsule\Manager as Capsule;
+use Illuminate\Container\Container;
+use Illuminate\Contracts\Events\Dispatcher;
 use support\Db;
+use Throwable;
 use Webman\Bootstrap;
 use WebmanTech\Debugbar\DataCollector\LaravelQueryCollector;
 use WebmanTech\Debugbar\DebugBar;
 
 class LaravelQuery implements Bootstrap
 {
+    private static bool $registered = false;
+
     /**
      * @inheritDoc
      */
     public static function start($worker)
     {
-        if (!class_exists(Capsule::class)) {
+        if (!class_exists(Capsule::class) || !class_exists(Db::class)) {
             return;
         }
-        $connections = array_keys((array)config('database.connections', []));
-        if ($default = config('database.default')) {
-            $connections[] = $default;
-        }
-        if (!$connections) {
-            return;
-        }
-        $connections = array_unique($connections);
 
         $collectorName = (new LaravelQueryCollector())->getName();
         $debugBar = DebugBar::instance();
@@ -36,8 +33,30 @@ class LaravelQuery implements Bootstrap
         /** @var LaravelQueryCollector $collector */
         $collector = $debugBar->getCollector($collectorName);
 
-        foreach ($connections as $connection) {
-            $collector->addListener(Db::connection((string)$connection));
+        self::listenForQueryEvents($collector);
+    }
+
+    private static function listenForQueryEvents(LaravelQueryCollector $collector): void
+    {
+        if (self::$registered) {
+            return;
+        }
+
+        $container = Container::getInstance();
+        if (!$container->bound('events')) {
+            return;
+        }
+
+        $dispatcher = $container->make('events');
+        if (!$dispatcher instanceof Dispatcher) {
+            return;
+        }
+
+        try {
+            $collector->addEventDispatcherListener($dispatcher);
+            self::$registered = true;
+        } catch (Throwable) {
+            // Ignore debug collector listener registration errors.
         }
     }
 }
