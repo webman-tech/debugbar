@@ -43,7 +43,7 @@ class HttpExt
 
         $header = $this->request->header('accept');
         if (is_array($header)) {
-            $header = implode(', ', $header);
+            $header = implode(', ', array_map(fn(mixed $v) => is_scalar($v) ? (string)$v : '', $header));
         }
         return str_contains((string)$header, 'text/html');
     }
